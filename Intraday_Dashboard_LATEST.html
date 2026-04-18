@@ -1,0 +1,293 @@
+
+    <html>
+    <head>
+    
+<style>
+body {
+    background-color: #0b0f1c;
+    color: #e6e9ef;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 10px;
+    padding: 10px;
+}
+
+.row {
+    display: grid;
+    gap: 10px;
+}
+
+.row-top {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.row-middle {
+    grid-template-columns: 1fr 1fr;
+}
+
+.row-baskets {
+    grid-template-columns: 1fr 1fr;
+}
+
+.panel {
+    background: #11162a;
+    border-radius: 10px;
+    padding: 10px;
+    min-height: 280px;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5f6b85;
+    font-size: 14px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.legs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.legs-table th {
+    font-size: 13px;
+    color: #9aa4b2;
+    padding: 6px;
+    text-align: left;
+}
+
+.legs-table td {
+    padding: 6px;
+    font-size: 14px;
+}
+
+.contract {
+    font-weight: 600;
+}
+
+.state-pill {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #2a2f45;
+    font-size: 11px;
+}
+
+.spark {
+    height: 60px;
+}
+
+.spark svg {
+    width: 100%;
+    height: 100%;
+}
+
+.basket-line {
+    fill: none;
+    stroke: #4cd964;
+    stroke-width: 2;
+}
+
+.big {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.green { color: #4cd964; }
+.red { color: #ff3b30; }
+
+</style>
+
+    </head>
+
+    <body>
+    <div class="dashboard">
+
+        <div class="row row-top">
+            <div class="panel">SPY: 679.91</div>
+            <div class="panel">QQQ: —</div>
+            <div class="panel">VIX: 19.49</div>
+            <div class="panel">10Y: 4.29</div>
+        </div>
+
+        <div class="row row-middle">
+            <div class="panel">Gamma Panel</div>
+            <div class="panel">Macro Panel</div>
+        </div>
+
+        <div class="row row-baskets">
+            
+    <div class="panel">
+        <div class="title">SPY | DTE 5</div>
+
+        <div class="big green">
+            $0.0 (0.0%)
+        </div>
+
+        <div class="spark">
+            <svg><polyline points="0.0,59.4 333.3,59.4 666.7,117.9 1000.0,117.9" class="basket-line"></polyline></svg>
+        </div>
+
+        
+    <table class="legs-table">
+        <thead>
+            <tr>
+                <th>CONTRACT</th>
+                <th>MARK</th>
+                <th>COST</th>
+                <th>P/L</th>
+                <th>P/L%</th>
+                <th>DELTA</th>
+                <th>STATE</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr>
+            <td class="contract">SPY 2026-04-17 650C</td>
+            <td>0.00</td>
+            <td>1563.8</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">CORE</span></td>
+        </tr>
+        
+        <tr>
+            <td class="contract">SPY 2026-04-17 660C</td>
+            <td>0.00</td>
+            <td>0.0</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">MOMENTUM</span></td>
+        </tr>
+        
+        <tr>
+            <td class="contract">SPY 2026-04-17 640P</td>
+            <td>0.00</td>
+            <td>0.0</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">HEDGE</span></td>
+        </tr>
+        
+        <tr>
+            <td class="contract">SPY 2026-04-17 630P</td>
+            <td>0.00</td>
+            <td>0.0</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">CONVEX</span></td>
+        </tr>
+        
+        </tbody>
+    </table>
+    
+    </div>
+    
+            
+    <div class="panel">
+        <div class="title">SPY | DTE 5</div>
+
+        <div class="big green">
+            $0.0 (0.0%)
+        </div>
+
+        <div class="spark">
+            <svg><polyline points="0.0,117.9 500.0,117.9 1000.0,117.9" class="basket-line"></polyline></svg>
+        </div>
+
+        
+    <table class="legs-table">
+        <thead>
+            <tr>
+                <th>CONTRACT</th>
+                <th>MARK</th>
+                <th>COST</th>
+                <th>P/L</th>
+                <th>P/L%</th>
+                <th>DELTA</th>
+                <th>STATE</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr>
+            <td class="contract">SPY 2026-04-17 670C x3 x3</td>
+            <td>0.00</td>
+            <td>2903.4</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">RESIDUAL_CALL</span></td>
+        </tr>
+        
+        <tr>
+            <td class="contract">SPY 2026-04-17 673P</td>
+            <td>0.00</td>
+            <td>298.1</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">RESIDUAL_PUT</span></td>
+        </tr>
+        
+        <tr>
+            <td class="contract">SPY 2026-04-17 675C</td>
+            <td>0.00</td>
+            <td>727.8</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">RESIDUAL_CALL</span></td>
+        </tr>
+        
+        <tr>
+            <td class="contract">SPY 2026-04-17 685C x2 x2</td>
+            <td>0.00</td>
+            <td>526.9</td>
+            <td class="green">0.0</td>
+            <td class="green">0.0</td>
+            <td>0.00</td>
+            <td><span class="state-pill">RESIDUAL_CALL</span></td>
+        </tr>
+        
+        </tbody>
+    </table>
+    
+    </div>
+    
+            
+    <div class="panel placeholder">
+        Waiting for active basket
+    </div>
+    
+            
+    <div class="panel placeholder">
+        Waiting for active basket
+    </div>
+    
+        </div>
+
+        <div class="panel">
+            Tactical: RED – Basket drift detected. 4 tracked legs missing from IBKR. Model no longer matches live structure.
+        </div>
+
+    </div>
+    </body>
+    </html>
+    
