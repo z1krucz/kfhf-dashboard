@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Macro Physics Map — v3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #041126;
+    --panel: #0c1729;
+    --line: rgba(130, 170, 230, 0.18);
+    --line2: rgba(130, 170, 230, 0.10);
+    --text: #edf3ff;
+    --muted: #9eb1d4;
+    --shadow: 0 7px 16px rgba(0,0,0,0.24);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #031022 0%, #041126 100%);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .wrap {
+    max-width: 1420px;
+    margin: 0 auto;
+    padding: 4px 6px 8px 6px;
+  }
+  .header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:4px;
+    gap:12px;
+  }
+  .header-left {
+    text-align:center;
+    flex:1 1 auto;
+  }
+  .header h1 { margin:0 0 1px 0; font-size:16px; font-weight:800; }
+  .head-line, .head-line2 { color:var(--muted); font-size:9.8px; line-height:1.05; }
+  .header-right {
+    font-size:10px;
+    color:#dbe7ff;
+    font-weight:700;
+    white-space:nowrap;
+    padding-top:1px;
+  }
+
+  .top-row {
+    display:grid;
+    grid-template-columns: 1fr 0.95fr 0.95fr 0.95fr;
+    gap:6px;
+    margin-bottom:6px;
+    align-items:stretch;
+  }
+  .strip-row {
+    display:grid;
+    grid-template-columns: 57% 43%;
+    gap:6px;
+    margin-bottom:6px;
+    align-items:start;
+  }
+  .middle-row {
+    display:grid;
+    grid-template-columns: 58% 42%;
+    gap:6px;
+    margin-bottom:6px;
+    align-items:start;
+  }
+  .bottom-row {
+    display:grid;
+    grid-template-columns: 58% 42%;
+    gap:6px;
+    align-items:start;
+    margin-bottom:6px;
+  }
+  .context-row {
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:6px;
+    align-items:start;
+  }
+  .right-stack {
+    display:grid;
+    gap:6px;
+    align-items:start;
+  }
+
+  .card {
+    background: linear-gradient(180deg, rgba(14,25,44,0.98), rgba(10,19,34,0.98));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-head {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:4px 8px 3px 8px;
+    border-bottom:1px solid var(--line2);
+  }
+  .card-title-wrap {
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .card-title { font-size:11px; font-weight:800; }
+  .card-meta { font-size:9px; color:var(--muted); white-space:nowrap; }
+  .light-dot {
+    width:10px;
+    height:10px;
+    border-radius:999px;
+    display:inline-block;
+    flex:0 0 auto;
+  }
+  .plot-wrap { padding:2px 6px 4px 6px; }
+  .plot { width:100%; height:auto; display:block; }
+  .plot-note { fill:var(--muted); font-size:11px; }
+  .plot-subnote { fill:var(--muted); font-size:8.8px; }
+  .strip-label { fill:#dfe9ff; font-size:8.2px; font-weight:700; }
+  .grid-line { stroke:rgba(130,170,230,0.09); stroke-width:1; }
+  .axis-line { stroke:rgba(190,220,255,0.35); stroke-width:1; }
+  .axis-label { fill:var(--muted); font-size:8.8px; }
+  .left-label { fill:#dfe9ff; font-size:9px; }
+  .marker-vix { fill:#38ff88; font-size:8.8px; font-weight:700; }
+  .marker-avg { fill:#6dc6ff; font-size:8.8px; font-weight:700; }
+  .marker-spy { fill:#ffbc42; font-size:8.8px; font-weight:700; }
+
+  .mini-box {
+    padding:4px 7px 5px 7px;
+  }
+  .metrics-grid {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:3px 8px;
+  }
+  .metric {
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+    font-size:9.4px;
+    border-top:1px solid var(--line2);
+    padding-top:2px;
+  }
+  .metric .k { color:var(--muted); }
+
+  .badge {
+    display:inline-block;
+    padding:2px 6px;
+    border-radius:999px;
+    font-size:8.8px;
+    font-weight:800;
+  }
+  .badge.ok { background:rgba(55,210,120,0.18); color:#8effbb; }
+  .badge.no { background:rgba(255,111,97,0.18); color:#ff9a8d; }
+  .badge.mid { background:rgba(255,196,76,0.16); color:#ffd17c; }
+
+  .note { color:var(--muted); font-size:8.9px; line-height:1.16; margin-top:3px; }
+  .reason-line { color:#d7e6ff; font-size:9px; line-height:1.14; margin-top:2px; }
+
+  .theme-legend {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+    padding:0 8px 6px 8px;
+    color:var(--muted);
+    font-size:8.8px;
+  }
+  .legend-chip { display:inline-flex; align-items:center; gap:4px; }
+  .legend-dot { width:7px; height:7px; border-radius:999px; display:inline-block; }
+
+  .zones { padding:0 8px 6px 8px; }
+  .zones .z { color:var(--muted); font-size:8.8px; line-height:1.12; margin-top:2px; }
+
+  .toggle-group { display:inline-flex; gap:5px; align-items:center; }
+  .toggle-btn {
+    background:rgba(255,255,255,0.04);
+    color:var(--text);
+    border:1px solid rgba(130,170,230,0.20);
+    border-radius:999px;
+    padding:1px 9px;
+    font-size:8.8px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .toggle-btn.active {
+    background:rgba(95,184,255,0.18);
+    border-color:rgba(95,184,255,0.55);
+    color:#dff2ff;
+  }
+
+  .txt-green { color:#39ff88; font-weight:700; }
+  .txt-red { color:#ff7f66; font-weight:700; }
+  .txt-yellow { color:#ffd54a; font-weight:700; }
+  .txt-white { color:#edf3ff; font-weight:700; }
+
+  .wind-banner {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:4px;
+    padding-top:3px;
+    border-top:1px solid var(--line2);
+    font-size:10px;
+  }
+  .wind-state {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-weight:800;
+  }
+
+  .gamma-strip {
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:9px;
+    margin-top:2px;
+  }
+
+  .mw-grid {
+    display:grid;
+    grid-template-columns: 18% 82%;
+    gap:6px;
+    align-items:start;
+    padding:4px 6px 6px 6px;
+  }
+  .mw-left {
+    padding:1px 1px 0 2px;
+  }
+  .mw-topline {
+    font-size:10.4px;
+    line-height:1.18;
+    font-weight:700;
+    color:#eef3ff;
+    margin-bottom:1px;
+  }
+  .mw-midline {
+    font-size:10.0px;
+    line-height:1.16;
+    color:#eef3ff;
+    margin-bottom:1px;
+  }
+  .mw-body {
+    margin-top:5px;
+    font-size:9.6px;
+    line-height:1.18;
+    color:#dfe9ff;
+  }
+  .mw-alert {
+    margin-top:5px;
+    font-size:9.8px;
+    line-height:1.18;
+    color:#ffd54a;
+    font-weight:700;
+  }
+
+  @media (max-width: 1300px) {
+    .top-row { grid-template-columns: 1fr 1fr; }
+    .strip-row, .middle-row, .bottom-row, .context-row { grid-template-columns: 1fr; }
+    .mw-grid { grid-template-columns: 1fr; }
+    .header { flex-direction:column; align-items:center; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="header-left">
+        <h1>MACRO PHYSICS MAP — v3</h1>
+        <div class="head-line">CloseDate: 2026-04-16 • AsOf: 2026-04-17 07:22</div>
+        <div class="head-line2" id="headLine2">
+          Rotation=71 | Master=143 | Joined=37 |
+          Scope=PORTFOLIO | Themes=7 |
+          CloseDate=CLI:--close-date | GEX=EXACT:SPY_GEX_Light_2026-04-16.csv | ByStrike=EXACT:SPY_GEX_ByStrike_2026-04-16.csv
+        </div>
+      </div>
+      <div class="header-right">SPY 701.66 &nbsp; VIX 17.9 &nbsp; 10Y 4.29</div>
+    </div>
+
+    <div class="top-row">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#f1c40f;"></span><div class="card-title">DECISION CARD</div></div>
+          <div class="card-meta">what to do next</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">Action Now</span><span><span class="badge mid">WAIT</span></span></div>
+            <div class="metric"><span class="k">Tomorrow Bias</span><span>NEUTRAL</span></div>
+            <div class="metric"><span class="k">Risk Posture</span><span>AGGRESSIVE</span></div>
+            <div class="metric"><span class="k">Deployment</span><span>DEPLOYABLE</span></div>
+          </div>
+          <div class='reason-line'>MGIT-aligned call = NEUTRAL_DEPLOYABLE.</div><div class='reason-line'>Behavior = CHOP; regime = POS_GAMMA.</div><div class='reason-line'>Risk posture driven by P_Tail3 / wall strength / deployment status.</div>
+          <div class="note">Comment: Deployment posture supports directional follow-through.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#f1c40f;"></span><div class="card-title">EXPECTATION ENGINE</div></div>
+          <div class="card-meta">prior-close composite</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">Directional Setup</span><span class="txt-white">NEUTRAL</span></div>
+            <div class="metric"><span class="k">MGIT-Aligned Call</span><span>NEUTRAL_DEPLOYABLE</span></div>
+            <div class="metric"><span class="k">Confidence</span><span>0.57</span></div>
+            <div class="metric"><span class="k">Expected Behavior</span><span>CHOP</span></div>
+            <div class="metric"><span class="k">Session Risk</span><span>MODERATE</span></div>
+            <div class="metric"><span class="k">Estimated Move</span><span>CONTAINED</span></div>
+            <div class="metric"><span class="k">Tradeability</span><span>OPEN</span></div>
+            <div class="metric"><span class="k">DirectionScore</span><span>0.19</span></div>
+          </div>
+          <div class='reason-line'>DirectionZ -0.67 and Macro 7.45/0.71 shape prior-close bias.</div><div class='reason-line'>Positive gamma dampens expansion; regime=POS_GAMMA; PMGD=+9.60.</div><div class='reason-line'>Spread=11.8; 20+ zone=61.8%.</div>
+          <div class="note">Comment: Neutral bias with chop behavior suggests contained conditions.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">MACRO REGIME</div></div>
+          <div class="card-meta">EXACT:Macro_Regime_Signal_2026-04-16.csv</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">Regime Bias</span><span>RISK_ON</span></div>
+            <div class="metric"><span class="k">Score / Confidence</span><span>7.45 / 0.71</span></div>
+            <div class="metric"><span class="k">Volatility</span><span>CALM</span></div>
+            <div class="metric"><span class="k">Yields</span><span>MIXED</span></div>
+            <div class="metric"><span class="k">Credit</span><span>STABLE</span></div>
+            <div class="metric"><span class="k">Dollar</span><span>SUPPORTIVE</span></div>
+            <div class="metric"><span class="k">Leadership</span><span>MIXED</span></div>
+            <div class="metric"><span class="k">Actual Data Date</span><span>2026-04-16</span></div>
+          </div>
+          <div class="note">Macro backdrop broadly supportive.</div>
+          <div class="note">Comment: Risk_On macro backdrop with calm volatility and supportive dollar tone.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">MGIT / BASKET SUMMARY</div></div>
+          <div class="card-meta">NONE</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">MGIT Action</span><span class="txt-white">3C</span></div>
+            <div class="metric"><span class="k">Gate Reason</span><span>TRADE (DirectionZ&lt;-0.30)</span></div>
+            <div class="metric"><span class="k">DirectionZ</span><span>-0.67</span></div>
+            <div class="metric"><span class="k">P_Tail3</span><span>0.517</span></div>
+            <div class="metric"><span class="k">VIX</span><span>17.94</span></div>
+            <div class="metric"><span class="k">PutCost M1/M2</span><span>0.0047 / 0.0094</span></div>
+          </div>
+          <div class="note">TradeCard NONE for this CloseDate.</div>
+          <div class="note">Comment: Model posture is deployable relative to current tail risk.</div>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="strip-row">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#f1c40f;"></span><div class="card-title">OPTIONS UNIVERSE CLOCK</div></div>
+          <div class="card-meta">12→24 structural strip • used=5 • EXACT:Options_Clock.csv</div>
+        </div>
+        <div class="plot-wrap">
+    <svg viewBox="0 0 660 64" class="plot">
+      <line x1="28.0" y1="10" x2="28.0" y2="50" class="grid-line" /><text x="24.0" y="61.0" class="axis-label">12</text><line x1="79.3" y1="10" x2="79.3" y2="50" class="grid-line" /><text x="75.3" y="61.0" class="axis-label">13</text><line x1="130.7" y1="10" x2="130.7" y2="50" class="grid-line" /><text x="126.7" y="61.0" class="axis-label">14</text><line x1="182.0" y1="10" x2="182.0" y2="50" class="grid-line" /><text x="178.0" y="61.0" class="axis-label">15</text><line x1="233.3" y1="10" x2="233.3" y2="50" class="grid-line" /><text x="229.3" y="61.0" class="axis-label">16</text><line x1="284.7" y1="10" x2="284.7" y2="50" class="grid-line" /><text x="280.7" y="61.0" class="axis-label">17</text><line x1="336.0" y1="10" x2="336.0" y2="50" class="grid-line" /><text x="332.0" y="61.0" class="axis-label">18</text><line x1="387.3" y1="10" x2="387.3" y2="50" class="grid-line" /><text x="383.3" y="61.0" class="axis-label">19</text><line x1="438.7" y1="10" x2="438.7" y2="50" class="grid-line" /><text x="434.7" y="61.0" class="axis-label">20</text><line x1="490.0" y1="10" x2="490.0" y2="50" class="grid-line" /><text x="486.0" y="61.0" class="axis-label">21</text><line x1="541.3" y1="10" x2="541.3" y2="50" class="grid-line" /><text x="537.3" y="61.0" class="axis-label">22</text><line x1="592.7" y1="10" x2="592.7" y2="50" class="grid-line" /><text x="588.7" y="61.0" class="axis-label">23</text><line x1="644.0" y1="10" x2="644.0" y2="50" class="grid-line" />
+      <line x1="28" y1="30.0" x2="644" y2="30.0" class="axis-line"/>
+      <line x1="130.7" y1="30.0" x2="130.7" y2="22.0" stroke="#39ff88" stroke-width="1.6"/><circle cx="130.7" cy="30.0" r="2.0" fill="#39ff88"><title>VIX | clock=14.00</title></circle><text x="133.7" y="20.0" class="strip-label">VIX</text><line x1="546.5" y1="30.0" x2="546.5" y2="22.0" stroke="#7ec8ff" stroke-width="1.6"/><circle cx="546.5" cy="30.0" r="2.0" fill="#7ec8ff"><title>NVDA | clock=22.10</title></circle><text x="549.5" y="20.0" class="strip-label">NVDA</text><line x1="623.5" y1="30.0" x2="623.5" y2="22.0" stroke="#ffb000" stroke-width="1.6"/><circle cx="623.5" cy="30.0" r="2.0" fill="#ffb000"><title>SPY | clock=23.60</title></circle><text x="626.5" y="20.0" class="strip-label">SPY</text><line x1="628.6" y1="30.0" x2="628.6" y2="38.0" stroke="#7ec8ff" stroke-width="1.6"/><circle cx="628.6" cy="30.0" r="2.0" fill="#7ec8ff"><title>SMH | clock=23.70</title></circle><text x="631.6" y="46.0" class="strip-label">SMH</text><line x1="633.7" y1="30.0" x2="633.7" y2="16.0" stroke="#7ec8ff" stroke-width="1.6"/><circle cx="633.7" cy="30.0" r="2.0" fill="#7ec8ff"><title>QQQ | clock=23.80</title></circle><text x="636.7" y="14.0" class="strip-label">QQQ</text>
+    </svg>
+    </div>
+        <div class="note" style="padding:0 8px 6px 8px;">Comment: Cross-asset clocks mixed; volatility leads risk assets.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#f1c40f;"></span><div class="card-title">MACRO WAVE CLOCK</div></div>
+          <div class="card-meta">LATEST_HISTORY_OK:Macro_Institutional_Panel_v2.csv:through=2026-04-16</div>
+        </div>
+        <div class="mw-grid">
+          <div class="mw-left">
+            <div class="mw-topline">MWS 1.7</div>
+            <div class="mw-topline">Class ORDERLY NEGATIVE SLOPE</div>
+            <div class="mw-midline">Spread 9.8h &nbsp;&nbsp; Bias 0.6</div>
+            <div class="mw-body">Outlook: structured stress, leaning lower</div>
+            <div class="mw-body">Comment: structure intact, stress elevated</div>
+          </div>
+          <div class="plot-wrap" style="padding:0;">
+    <svg viewBox="0 0 860 300" class="plot">
+      <line x1="92.0" y1="12.0" x2="92.0" y2="279.0" class="grid-line" /><text x="87.0" y="294.0" class="axis-label">12</text><line x1="218.0" y1="12.0" x2="218.0" y2="279.0" class="grid-line" /><text x="213.0" y="294.0" class="axis-label">14</text><line x1="344.0" y1="12.0" x2="344.0" y2="279.0" class="grid-line" /><text x="339.0" y="294.0" class="axis-label">16</text><line x1="470.0" y1="12.0" x2="470.0" y2="279.0" class="grid-line" /><text x="465.0" y="294.0" class="axis-label">18</text><line x1="596.0" y1="12.0" x2="596.0" y2="279.0" class="grid-line" /><text x="591.0" y="294.0" class="axis-label">20</text><line x1="722.0" y1="12.0" x2="722.0" y2="279.0" class="grid-line" /><text x="717.0" y="294.0" class="axis-label">22</text><line x1="848.0" y1="12.0" x2="848.0" y2="279.0" class="grid-line" /><text x="843.0" y="294.0" class="axis-label">24</text>
+      <line x1="92.0" y1="14.0" x2="848.0" y2="14.0" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="18.4" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">CL</text><line x1="92.0" y1="51.4" x2="848.0" y2="51.4" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="55.8" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">DXY</text><line x1="92.0" y1="88.9" x2="848.0" y2="88.9" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="93.3" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">US2Y</text><line x1="92.0" y1="126.3" x2="848.0" y2="126.3" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="130.7" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">US10Y</text><line x1="92.0" y1="163.7" x2="848.0" y2="163.7" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="168.1" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">MOVE</text><line x1="92.0" y1="201.1" x2="848.0" y2="201.1" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="205.5" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">VIX</text><line x1="92.0" y1="238.6" x2="848.0" y2="238.6" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="243.0" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">VVIX</text><line x1="92.0" y1="276.0" x2="848.0" y2="276.0" stroke="rgba(190,220,255,0.10)" stroke-width="1"/><text x="82.0" y="280.4" text-anchor="end" fill="#dfe9ff" font-size="12.2" font-weight="700">SPY</text>
+      <polygon points="816.5,9.2 558.2,46.6 463.7,84.1 835.4,121.5 230.6,158.9 218.0,196.3 451.1,233.8 822.8,271.2 822.8,280.8 451.1,243.4 218.0,205.9 230.6,168.5 835.4,131.1 463.7,93.7 558.2,56.2 816.5,18.8" fill="#dce6f7" opacity="0.05"/>
+      <polyline points="816.5,14.0 558.2,51.4 463.7,88.9 835.4,126.3 230.6,163.7 218.0,201.1 451.1,238.6 822.8,276.0" fill="none" stroke="#d8e2f3" stroke-width="2.35" opacity="0.96"/>
+      <circle cx="816.5" cy="14.0" r="3.6" fill="#ff9f43" fill-opacity="1.0" stroke="#ffffff" stroke-width="1.0"/><circle cx="558.2" cy="51.4" r="2.8" fill="#b28cff" fill-opacity="1.0" stroke="#ffffff" stroke-width="0.8"/><circle cx="463.7" cy="88.9" r="2.8" fill="#ffd54a" fill-opacity="1.0" stroke="#ffffff" stroke-width="0.8"/><circle cx="835.4" cy="126.3" r="2.8" fill="#ffcb47" fill-opacity="1.0" stroke="#ffffff" stroke-width="0.8"/><circle cx="230.6" cy="163.7" r="2.8" fill="#ff6b6b" fill-opacity="1.0" stroke="#ffffff" stroke-width="0.8"/><circle cx="218.0" cy="201.1" r="2.8" fill="#39ff88" fill-opacity="1.0" stroke="#ffffff" stroke-width="0.8"/><circle cx="451.1" cy="238.6" r="2.8" fill="#ff65d4" fill-opacity="1.0" stroke="#ffffff" stroke-width="0.8"/><circle cx="822.8" cy="276.0" r="3.6" fill="#eef3fb" fill-opacity="1.0" stroke="#ffffff" stroke-width="1.0"/>
+      <rect x="786.0" y="15.0" width="54" height="14" rx="3" fill="rgba(255,255,255,0.04)" stroke="rgba(190,220,255,0.10)"/><text x="813.0" y="25.3" text-anchor="middle" fill="#dfe9ff" font-size="8.0" font-weight="700">≈ MIXED</text>
+      
+    </svg>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="middle-row">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><div class="card-title">THEME SLICES (12→24 clock)</div></div>
+          <div class="card-meta"><span id="themeMeta">center + dispersion • Scope=PORTFOLIO</span></div>
+        </div>
+        <div class="plot-wrap" id="themePlot">
+    <svg viewBox="0 0 660 126" class="plot">
+      <line x1="155.0" y1="14" x2="155.0" y2="112" class="grid-line" /><text x="156.0" y="124" class="axis-label">12</text><line x1="195.8" y1="14" x2="195.8" y2="112" class="grid-line" /><text x="196.8" y="124" class="axis-label">13</text><line x1="236.5" y1="14" x2="236.5" y2="112" class="grid-line" /><text x="237.5" y="124" class="axis-label">14</text><line x1="277.2" y1="14" x2="277.2" y2="112" class="grid-line" /><text x="278.2" y="124" class="axis-label">15</text><line x1="318.0" y1="14" x2="318.0" y2="112" class="grid-line" /><text x="319.0" y="124" class="axis-label">16</text><line x1="358.8" y1="14" x2="358.8" y2="112" class="grid-line" /><text x="359.8" y="124" class="axis-label">17</text><line x1="399.5" y1="14" x2="399.5" y2="112" class="grid-line" /><text x="400.5" y="124" class="axis-label">18</text><line x1="440.2" y1="14" x2="440.2" y2="112" class="grid-line" /><text x="441.2" y="124" class="axis-label">19</text><line x1="481.0" y1="14" x2="481.0" y2="112" class="grid-line" /><text x="482.0" y="124" class="axis-label">20</text><line x1="521.8" y1="14" x2="521.8" y2="112" class="grid-line" /><text x="522.8" y="124" class="axis-label">21</text><line x1="562.5" y1="14" x2="562.5" y2="112" class="grid-line" /><text x="563.5" y="124" class="axis-label">22</text><line x1="603.2" y1="14" x2="603.2" y2="112" class="grid-line" /><text x="604.2" y="124" class="axis-label">23</text><line x1="644.0" y1="14" x2="644.0" y2="112" class="grid-line" />
+      <text x="8" y="25.0" class="left-label">AI (n=6) avg=18.7 spr=8.9</text><line x1="265.0" y1="21.0" x2="627.7" y2="21.0" stroke="#65d8ff" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="354.3" y1="21.0" x2="501.7" y2="21.0" stroke="#65d8ff" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="428.0" cy="21.0" r="4.4" fill="#65d8ff" stroke="#ffffff" stroke-width="0.8"/><text x="8" y="39.0" class="left-label">CD (n=8) avg=18.7 spr=11.0</text><line x1="159.1" y1="35.0" x2="607.3" y2="35.0" stroke="#60f5a1" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="352.5" y1="35.0" x2="505.6" y2="35.0" stroke="#60f5a1" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="429.0" cy="35.0" r="4.4" fill="#60f5a1" stroke="#ffffff" stroke-width="0.8"/><text x="8" y="53.0" class="left-label">N (n=7) avg=19.5 spr=8.2</text><line x1="248.7" y1="49.0" x2="582.9" y2="49.0" stroke="#ffcb47" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="398.8" y1="49.0" x2="524.8" y2="49.0" stroke="#ffcb47" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="461.8" cy="49.0" r="4.4" fill="#ffcb47" stroke="#ffffff" stroke-width="0.8"/><text x="8" y="67.0" class="left-label">RE (n=6) avg=20.6 spr=5.3</text><line x1="395.4" y1="63.0" x2="611.4" y2="63.0" stroke="#ff7f66" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="457.4" y1="63.0" x2="552.2" y2="63.0" stroke="#ff7f66" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="504.8" cy="63.0" r="4.4" fill="#ff7f66" stroke="#ffffff" stroke-width="0.8"/><text x="8" y="81.0" class="left-label">I (n=2) avg=21.9 spr=1.6</text><line x1="525.8" y1="77.0" x2="591.0" y2="77.0" stroke="#b28cff" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="535.4" y1="77.0" x2="581.5" y2="77.0" stroke="#b28cff" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="558.4" cy="77.0" r="4.4" fill="#b28cff" stroke="#ffffff" stroke-width="0.8"/><text x="8" y="95.0" class="left-label">QL (n=4) avg=23.4 spr=0.3</text><line x1="611.4" y1="91.0" x2="623.6" y2="91.0" stroke="#6ee7d2" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="614.5" y1="91.0" x2="622.6" y2="91.0" stroke="#6ee7d2" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="618.5" cy="91.0" r="4.4" fill="#6ee7d2" stroke="#ffffff" stroke-width="0.8"/><text x="8" y="109.0" class="left-label">ETV (n=1) avg=23.9 spr=0.0</text><line x1="639.9" y1="105.0" x2="639.9" y2="105.0" stroke="#ffd166" stroke-width="2.0" stroke-linecap="round" opacity="0.90"/><line x1="635.8" y1="105.0" x2="644.0" y2="105.0" stroke="#ffd166" stroke-width="6.0" stroke-linecap="round" opacity="0.75"/><circle cx="639.9" cy="105.0" r="4.4" fill="#ffd166" stroke="#ffffff" stroke-width="0.8"/>
+    </svg>
+    </div>
+        <div class="theme-legend" id="themeLegend"><span class="legend-chip"><span class="legend-dot" style="background:#65d8ff;"></span>AI</span><span class="legend-chip"><span class="legend-dot" style="background:#60f5a1;"></span>CD</span><span class="legend-chip"><span class="legend-dot" style="background:#ffcb47;"></span>N</span><span class="legend-chip"><span class="legend-dot" style="background:#ff7f66;"></span>RE</span><span class="legend-chip"><span class="legend-dot" style="background:#b28cff;"></span>I</span><span class="legend-chip"><span class="legend-dot" style="background:#6ee7d2;"></span>QL</span><span class="legend-chip"><span class="legend-dot" style="background:#ffd166;"></span>ETV</span></div>
+      </div>
+
+      <div class="right-stack">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">WIND (PMGD)</div></div>
+            <div class="card-meta">SPY/VIX support layer</div>
+          </div>
+          <div class="mini-box">
+            <div class="metrics-grid">
+              <div class="metric"><span class="k">Dealer bias</span><span>SELL_RALLY_CAP</span></div>
+              <div class="metric"><span class="k">GEX regime</span><span class="txt-green">POS_GAMMA</span></div>
+              <div class="metric"><span class="k">WallStrength</span><span>0.16</span></div>
+              <div class="metric"><span class="k">WallSide</span><span>BELOW</span></div>
+            </div>
+            <div class="wind-banner">
+              <div class="wind-state txt-green"><span>↑</span><span>TAILWIND</span></div>
+              <div class="txt-green">PMGD 9.60</div>
+            </div>
+            <div class="note">Comment: SELL_RALLY_CAP with POS_GAMMA and PMGD +9.6 shapes dealer behavior.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">WALL PANEL</div></div>
+            <div class="card-meta">dealer posture</div>
+          </div>
+          <div class="mini-box">
+            <div class="metrics-grid">
+              <div class="metric"><span class="k">WallStrength</span><span>0.16</span></div>
+              <div class="metric"><span class="k">WallStrike</span><span>705</span></div>
+              <div class="metric"><span class="k">Spot</span><span>701.66</span></div>
+              <div class="metric"><span class="k">WallDistance</span><span>3.34</span></div>
+              <div class="metric"><span class="k">Regime</span><span>POS_GAMMA</span></div>
+              <div class="metric"><span class="k">Quality</span><span>GOOD</span></div>
+            </div>
+            <div class="note">Comment: Dealer wall near 705.000000 with distance 3.34 may pin price under POS_GAMMA conditions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><div class="card-title">COMPRESSION WAVE (hist + density + swarm)</div></div>
+          <div class="card-meta">
+            <span class="toggle-group">
+              <button class="toggle-btn active" id="btnPORTFOLIO" onclick="setScope('PORTFOLIO')">PORTFOLIO</button>
+              <button class="toggle-btn" id="btnROTATION" onclick="setScope('ROTATION')">ROTATION</button>
+            </span>
+            <span id="compressionMeta">scope=PORTFOLIO • n=34 • avg=20.1 • spread=11.8</span>
+          </div>
+        </div>
+        <div class="plot-wrap" id="compressionPlot">
+    <svg viewBox="0 0 660 138" class="plot">
+      <line x1="14.0" y1="10" x2="14.0" y2="110" class="grid-line" /><text x="9.0" y="124.0" class="axis-label">12</text><line x1="66.5" y1="10" x2="66.5" y2="110" class="grid-line" /><text x="61.5" y="124.0" class="axis-label">13</text><line x1="119.0" y1="10" x2="119.0" y2="110" class="grid-line" /><text x="114.0" y="124.0" class="axis-label">14</text><line x1="171.5" y1="10" x2="171.5" y2="110" class="grid-line" /><text x="166.5" y="124.0" class="axis-label">15</text><line x1="224.0" y1="10" x2="224.0" y2="110" class="grid-line" /><text x="219.0" y="124.0" class="axis-label">16</text><line x1="276.5" y1="10" x2="276.5" y2="110" class="grid-line" /><text x="271.5" y="124.0" class="axis-label">17</text><line x1="329.0" y1="10" x2="329.0" y2="110" class="grid-line" /><text x="324.0" y="124.0" class="axis-label">18</text><line x1="381.5" y1="10" x2="381.5" y2="110" class="grid-line" /><text x="376.5" y="124.0" class="axis-label">19</text><line x1="434.0" y1="10" x2="434.0" y2="110" class="grid-line" /><text x="429.0" y="124.0" class="axis-label">20</text><line x1="486.5" y1="10" x2="486.5" y2="110" class="grid-line" /><text x="481.5" y="124.0" class="axis-label">21</text><line x1="539.0" y1="10" x2="539.0" y2="110" class="grid-line" /><text x="534.0" y="124.0" class="axis-label">22</text><line x1="591.5" y1="10" x2="591.5" y2="110" class="grid-line" /><text x="586.5" y="124.0" class="axis-label">23</text><line x1="644.0" y1="10" x2="644.0" y2="110" class="grid-line" />
+      <rect x="15.0" y="96.0" width="24.2" height="14.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="41.2" y="110.0" width="24.2" height="0.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="67.5" y="110.0" width="24.2" height="0.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="93.8" y="110.0" width="24.2" height="0.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="120.0" y="96.0" width="24.2" height="14.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="146.2" y="96.0" width="24.2" height="14.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="172.5" y="96.0" width="24.2" height="14.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="198.8" y="96.0" width="24.2" height="14.0" fill="#26c281" opacity="0.92" rx="1.4"/><rect x="225.0" y="96.0" width="24.2" height="14.0" fill="#46e08d" opacity="0.92" rx="1.4"/><rect x="251.2" y="110.0" width="24.2" height="0.0" fill="#46e08d" opacity="0.92" rx="1.4"/><rect x="277.5" y="96.0" width="24.2" height="14.0" fill="#46e08d" opacity="0.92" rx="1.4"/><rect x="303.8" y="82.0" width="24.2" height="28.0" fill="#46e08d" opacity="0.92" rx="1.4"/><rect x="330.0" y="82.0" width="24.2" height="28.0" fill="#46e08d" opacity="0.92" rx="1.4"/><rect x="356.2" y="82.0" width="24.2" height="28.0" fill="#46e08d" opacity="0.92" rx="1.4"/><rect x="382.5" y="110.0" width="24.2" height="0.0" fill="#d0ae23" opacity="0.92" rx="1.4"/><rect x="408.8" y="110.0" width="24.2" height="0.0" fill="#d0ae23" opacity="0.92" rx="1.4"/><rect x="435.0" y="82.0" width="24.2" height="28.0" fill="#d0ae23" opacity="0.92" rx="1.4"/><rect x="461.2" y="96.0" width="24.2" height="14.0" fill="#d0ae23" opacity="0.92" rx="1.4"/><rect x="487.5" y="68.0" width="24.2" height="42.0" fill="#d68f22" opacity="0.92" rx="1.4"/><rect x="513.8" y="110.0" width="24.2" height="0.0" fill="#d68f22" opacity="0.92" rx="1.4"/><rect x="540.0" y="54.0" width="24.2" height="56.0" fill="#d68f22" opacity="0.92" rx="1.4"/><rect x="566.2" y="82.0" width="24.2" height="28.0" fill="#d0534c" opacity="0.92" rx="1.4"/><rect x="592.5" y="26.0" width="24.2" height="84.0" fill="#d0534c" opacity="0.92" rx="1.4"/><rect x="618.8" y="68.0" width="24.2" height="42.0" fill="#d0534c" opacity="0.92" rx="1.4"/>
+      <polyline points="27.1,103.0 53.4,105.3 79.6,110.0 105.9,105.3 132.1,100.7 158.4,96.0 184.6,96.0 210.9,96.0 237.1,100.7 263.4,100.7 289.6,96.0 315.9,86.7 342.1,82.0 368.4,91.3 394.6,100.7 420.9,100.7 447.1,96.0 473.4,82.0 499.6,91.3 525.9,77.3 552.1,82.0 578.4,54.0 604.6,58.7 630.9,47.0" fill="none" stroke="#eef3fb" stroke-width="2.8" opacity="0.95"/>
+      <line x1="119.0" y1="10" x2="119.0" y2="110" stroke="#1cff7a" stroke-width="2.1"/><text x="123.0" y="22.0" class="marker-vix">VIX</text><line x1="439.3" y1="10" x2="439.3" y2="110" stroke="#5fb8ff" stroke-width="2.1" stroke-dasharray="4 4"/><text x="443.3" y="22.0" class="marker-avg">AVG</text><line x1="623.0" y1="10" x2="623.0" y2="110" stroke="#ffb000" stroke-width="2.1"/><text x="627.0" y="22.0" class="marker-spy">SPY</text>
+      <circle cx="19.2" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>ASTS | theme=CD | phase= | clock=12.10</title></circle><circle cx="134.8" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>ASPI | theme=N | phase= | clock=14.30</title></circle><circle cx="155.7" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>LBRT | theme=AI | phase= | clock=14.70</title></circle><circle cx="176.7" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>APLD | theme=AI | phase= | clock=15.10</title></circle><circle cx="218.8" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>KTOS | theme=CD | phase= | clock=15.90</title></circle><circle cx="234.5" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>PANW | theme=CD | phase= | clock=16.20</title></circle><circle cx="287.0" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>LTBR | theme=N | phase= | clock=17.20</title></circle><circle cx="318.5" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>PLTR | theme=AI | phase= | clock=17.80</title></circle><circle cx="323.7" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>REEMF | theme=RE | phase= | clock=17.90</title></circle><circle cx="334.3" cy="120.5" r="2.0" fill="#8fd4ff" opacity="0.96"><title>SMR | theme=N | phase= | clock=18.10</title></circle><circle cx="334.3" cy="124.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>UAMY | theme=RE | phase= | clock=18.10</title></circle><circle cx="371.0" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>RCAT | theme=CD | phase= | clock=18.80</title></circle><circle cx="376.2" cy="117.0" r="2.0" fill="#8fd4ff" opacity="0.96"><title>BBAI | theme=AI | phase= | clock=18.90</title></circle><circle cx="439.3" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>NB | theme=RE | phase= | clock=20.10</title></circle><circle cx="444.5" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>BKSY | theme=CD | phase= | clock=20.20</title></circle><circle cx="460.2" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>LEU | theme=N | phase= | clock=20.50</title></circle><circle cx="491.8" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>ETN | theme=I | phase= | clock=21.10</title></circle><circle cx="491.8" cy="120.5" r="2.3" fill="#ffcf57" opacity="0.98"><title>ONDS | theme=CD | phase= | clock=21.10</title></circle><circle cx="491.8" cy="124.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>USAR | theme=RE | phase= | clock=21.10</title></circle><circle cx="539.0" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>UEC | theme=N | phase= | clock=22.00</title></circle><circle cx="544.3" cy="120.5" r="2.3" fill="#ffcf57" opacity="0.98"><title>UUUU | theme=N | phase= | clock=22.10</title></circle><circle cx="544.3" cy="124.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>NVDA | theme=AI | phase= | clock=22.10</title></circle><circle cx="560.0" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>DPRO | theme=CD | phase= | clock=22.40</title></circle><circle cx="565.2" cy="120.5" r="2.3" fill="#ffcf57" opacity="0.98"><title>OKLO | theme=N | phase= | clock=22.50</title></circle><circle cx="575.8" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>IE | theme=I | phase= | clock=22.70</title></circle><circle cx="596.8" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>MP | theme=RE | phase= | clock=23.10</title></circle><circle cx="596.8" cy="120.5" r="2.3" fill="#ffcf57" opacity="0.98"><title>RKLB | theme=CD | phase= | clock=23.10</title></circle><circle cx="602.0" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>QBTS | theme=QL | phase= | clock=23.20</title></circle><circle cx="602.0" cy="120.5" r="2.3" fill="#ffcf57" opacity="0.98"><title>LAC | theme=RE | phase= | clock=23.20</title></circle><circle cx="612.5" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>RGTI | theme=QL | phase= | clock=23.40</title></circle><circle cx="612.5" cy="120.5" r="2.3" fill="#ffcf57" opacity="0.98"><title>QUBT | theme=QL | phase= | clock=23.40</title></circle><circle cx="617.8" cy="124.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>IONQ | theme=QL | phase= | clock=23.50</title></circle><circle cx="623.0" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>PWR | theme=AI | phase= | clock=23.60</title></circle><circle cx="638.8" cy="117.0" r="2.3" fill="#ffcf57" opacity="0.98"><title>SGOV | theme=ETV | phase= | clock=23.90</title></circle>
+      <text x="14.0" y="130.0" class="plot-subnote">Bars=count in each 0.5h bucket • White line=smoothed density • Dots=individual symbols</text>
+    </svg>
+    </div>
+        <div class="zones">
+          <div class="z" id="zoneText"><strong>20+ Zone:</strong> Coiling(20–22) = NB, BKSY, LEU, ETN, ONDS, USAR | Active(22–24) = UEC, NVDA, UUUU, DPRO, OKLO, IE, MP, RKLB, LAC, QBTS, QUBT, RGTI, IONQ, PWR, SGOV</div>
+          <div class="note">Comment: Cluster near 20+ indicates a potential expansion window.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">GAMMA WALL (ByStrike)</div></div>
+          <div class="card-meta">Support / Resistance / Flip / Spot</div>
+        </div>
+        <div class="plot-wrap">
+        <svg viewBox="0 0 470 150" class="plot">
+          <line x1="26" y1="74.0" x2="456" y2="74.0" class="axis-line"/>
+          <rect x="22.8" y="74.0" width="6.5" height="0.1" fill="#f07f7f" opacity="0.92"/><rect x="31.0" y="74.0" width="6.5" height="0.7" fill="#f07f7f" opacity="0.92"/><rect x="39.3" y="74.0" width="6.5" height="0.1" fill="#f07f7f" opacity="0.92"/><rect x="47.6" y="74.0" width="6.5" height="0.1" fill="#f07f7f" opacity="0.92"/><rect x="55.9" y="74.0" width="6.5" height="0.1" fill="#f07f7f" opacity="0.92"/><rect x="64.1" y="74.0" width="6.5" height="0.1" fill="#f07f7f" opacity="0.92"/><rect x="72.4" y="74.0" width="6.5" height="2.3" fill="#f07f7f" opacity="0.92"/><rect x="80.7" y="74.0" width="6.5" height="0.1" fill="#f07f7f" opacity="0.92"/><rect x="88.9" y="74.0" width="6.5" height="0.2" fill="#f07f7f" opacity="0.92"/><rect x="97.2" y="74.0" width="6.5" height="0.3" fill="#f07f7f" opacity="0.92"/><rect x="105.5" y="74.0" width="6.5" height="0.3" fill="#f07f7f" opacity="0.92"/><rect x="113.7" y="74.0" width="6.5" height="1.4" fill="#f07f7f" opacity="0.92"/><rect x="122.0" y="74.0" width="6.5" height="0.2" fill="#f07f7f" opacity="0.92"/><rect x="130.3" y="74.0" width="6.5" height="0.3" fill="#f07f7f" opacity="0.92"/><rect x="138.5" y="74.0" width="6.5" height="0.3" fill="#f07f7f" opacity="0.92"/><rect x="146.8" y="74.0" width="6.5" height="0.2" fill="#f07f7f" opacity="0.92"/><rect x="155.1" y="74.0" width="6.5" height="1.5" fill="#f07f7f" opacity="0.92"/><rect x="163.4" y="74.0" width="6.5" height="0.4" fill="#f07f7f" opacity="0.92"/><rect x="171.6" y="74.0" width="6.5" height="0.8" fill="#f07f7f" opacity="0.92"/><rect x="179.9" y="74.0" width="6.5" height="0.5" fill="#f07f7f" opacity="0.92"/><rect x="188.2" y="74.0" width="6.5" height="0.6" fill="#f07f7f" opacity="0.92"/><rect x="196.4" y="74.0" width="6.5" height="1.6" fill="#f07f7f" opacity="0.92"/><rect x="204.7" y="74.0" width="6.5" height="0.4" fill="#f07f7f" opacity="0.92"/><rect x="213.0" y="74.0" width="6.5" height="0.6" fill="#f07f7f" opacity="0.92"/><rect x="221.2" y="74.0" width="6.5" height="0.6" fill="#f07f7f" opacity="0.92"/><rect x="229.5" y="74.0" width="6.5" height="0.8" fill="#f07f7f" opacity="0.92"/><rect x="237.8" y="74.0" width="6.5" height="1.9" fill="#f07f7f" opacity="0.92"/><rect x="246.0" y="74.0" width="6.5" height="0.0" fill="#f07f7f" opacity="0.92"/><rect x="254.3" y="73.8" width="6.5" height="0.2" fill="#7fb7ff" opacity="0.92"/><rect x="262.6" y="73.3" width="6.5" height="0.7" fill="#7fb7ff" opacity="0.92"/><rect x="270.9" y="73.5" width="6.5" height="0.5" fill="#7fb7ff" opacity="0.92"/><rect x="279.1" y="74.0" width="6.5" height="0.2" fill="#f07f7f" opacity="0.92"/><rect x="287.4" y="74.0" width="6.5" height="0.9" fill="#f07f7f" opacity="0.92"/><rect x="295.7" y="73.7" width="6.5" height="0.3" fill="#7fb7ff" opacity="0.92"/><rect x="303.9" y="74.0" width="6.5" height="1.7" fill="#f07f7f" opacity="0.92"/><rect x="312.2" y="72.5" width="6.5" height="1.5" fill="#7fb7ff" opacity="0.92"/><rect x="320.5" y="71.2" width="6.5" height="2.8" fill="#7fb7ff" opacity="0.92"/><rect x="328.7" y="74.0" width="6.5" height="1.2" fill="#f07f7f" opacity="0.92"/><rect x="337.0" y="74.0" width="6.5" height="0.5" fill="#f07f7f" opacity="0.92"/><rect x="345.3" y="74.0" width="6.5" height="0.2" fill="#f07f7f" opacity="0.92"/><rect x="353.5" y="70.4" width="6.5" height="3.6" fill="#7fb7ff" opacity="0.92"/><rect x="361.8" y="59.3" width="6.5" height="14.7" fill="#7fb7ff" opacity="0.92"/><rect x="370.1" y="67.9" width="6.5" height="6.1" fill="#7fb7ff" opacity="0.92"/><rect x="378.4" y="54.4" width="6.5" height="19.6" fill="#7fb7ff" opacity="0.92"/><rect x="386.6" y="26.7" width="6.5" height="47.3" fill="#7fb7ff" opacity="0.92"/><rect x="394.9" y="40.2" width="6.5" height="33.8" fill="#7fb7ff" opacity="0.92"/><rect x="403.2" y="17.7" width="6.5" height="56.3" fill="#7fb7ff" opacity="0.92"/><rect x="411.4" y="32.1" width="6.5" height="41.9" fill="#7fb7ff" opacity="0.92"/><rect x="419.7" y="32.0" width="6.5" height="42.0" fill="#7fb7ff" opacity="0.92"/><rect x="428.0" y="55.2" width="6.5" height="18.8" fill="#7fb7ff" opacity="0.92"/><rect x="436.2" y="65.4" width="6.5" height="8.6" fill="#7fb7ff" opacity="0.92"/><rect x="444.5" y="55.6" width="6.5" height="18.4" fill="#7fb7ff" opacity="0.92"/><rect x="452.8" y="70.2" width="6.5" height="3.8" fill="#7fb7ff" opacity="0.92"/>
+          <line x1="406.4" y1="10" x2="406.4" y2="138" stroke="#39ff88" stroke-width="1.8"/><line x1="75.6" y1="10" x2="75.6" y2="138" stroke="#ff7f66" stroke-width="1.8"/><line x1="349.0" y1="10" x2="349.0" y2="138" stroke="#ffd54a" stroke-width="1.8" stroke-dasharray="4 3"/><line x1="378.8" y1="10" x2="378.8" y2="138" stroke="#5fdcff" stroke-width="1.8"/>
+          <text x="409.4" y="18.0" fill="#39ff88" font-size="8.4" font-weight="700">S 705</text><text x="78.6" y="18.0" fill="#ff7f66" font-size="8.4" font-weight="700">R 665</text><text x="352.0" y="18.0" fill="#ffd54a" font-size="8.4" font-weight="700">F 698</text><text x="381.8" y="18.0" fill="#5fdcff" font-size="8.4" font-weight="700">Spot 701.66</text>
+          
+        </svg>
+        </div>
+        <div class="mini-box" style="padding-top:0;">
+          <div class="gamma-strip">
+            <span class="txt-green">S 705</span>
+            <span class="txt-red">R 665</span>
+            <span class="txt-yellow">F 698</span>
+            <span class="txt-white">Spot 701.66</span>
+          </div>
+          <div class="note">Support 705 | Resistance 665 | Flip 698 | Spot 701.66</div>
+          <div class="note">Comment: Spot below support raises breakdown sensitivity.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="context-row">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">RATES</div></div>
+          <div class="card-meta">bond context</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">10Y</span><span>4.29</span></div>
+            <div class="metric"><span class="k">Δ10Y</span><span>0.00</span></div>
+            <div class="metric"><span class="k">2Y</span><span>3.76</span></div>
+            <div class="metric"><span class="k">MOVE</span><span>65.89</span></div>
+            <div class="metric"><span class="k">Yield Spread</span><span>0.53</span></div>
+            <div class="metric"><span class="k">Yield Shock</span><span>0.00</span></div>
+          </div>
+          <div class="note">Comment: Rates backdrop looks contained relative to bond volatility.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#f1c40f;"></span><div class="card-title">BREADTH</div></div>
+          <div class="card-meta">participation</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">Advancers</span><span>N/A</span></div>
+            <div class="metric"><span class="k">% Positive</span><span>N/A</span></div>
+            <div class="metric"><span class="k">Decliners</span><span>N/A</span></div>
+            <div class="metric"><span class="k">New Highs</span><span>15</span></div>
+            <div class="metric"><span class="k">New Lows</span><span>1</span></div>
+          </div>
+          <div class="note">Comment: Breadth remains mixed and unconvincing.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-wrap"><span class="light-dot" style="background:#2ecc71;"></span><div class="card-title">FLOW</div></div>
+          <div class="card-meta">options positioning</div>
+        </div>
+        <div class="mini-box">
+          <div class="metrics-grid">
+            <div class="metric"><span class="k">OI Change</span><span>N/A</span></div>
+            <div class="metric"><span class="k">Volume</span><span>N/A</span></div>
+            <div class="metric"><span class="k">Net Gamma</span><span>872,897,704,140</span></div>
+            <div class="metric"><span class="k">Put/Call</span><span>N/A</span></div>
+          </div>
+          <div class="note">Comment: Flow positioning looks balanced to mixed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const SCOPE_BUNDLE = {"PORTFOLIO": {"theme_svg": "\n    <svg viewBox=\"0 0 660 126\" class=\"plot\">\n      <line x1=\"155.0\" y1=\"14\" x2=\"155.0\" y2=\"112\" class=\"grid-line\" /><text x=\"156.0\" y=\"124\" class=\"axis-label\">12</text><line x1=\"195.8\" y1=\"14\" x2=\"195.8\" y2=\"112\" class=\"grid-line\" /><text x=\"196.8\" y=\"124\" class=\"axis-label\">13</text><line x1=\"236.5\" y1=\"14\" x2=\"236.5\" y2=\"112\" class=\"grid-line\" /><text x=\"237.5\" y=\"124\" class=\"axis-label\">14</text><line x1=\"277.2\" y1=\"14\" x2=\"277.2\" y2=\"112\" class=\"grid-line\" /><text x=\"278.2\" y=\"124\" class=\"axis-label\">15</text><line x1=\"318.0\" y1=\"14\" x2=\"318.0\" y2=\"112\" class=\"grid-line\" /><text x=\"319.0\" y=\"124\" class=\"axis-label\">16</text><line x1=\"358.8\" y1=\"14\" x2=\"358.8\" y2=\"112\" class=\"grid-line\" /><text x=\"359.8\" y=\"124\" class=\"axis-label\">17</text><line x1=\"399.5\" y1=\"14\" x2=\"399.5\" y2=\"112\" class=\"grid-line\" /><text x=\"400.5\" y=\"124\" class=\"axis-label\">18</text><line x1=\"440.2\" y1=\"14\" x2=\"440.2\" y2=\"112\" class=\"grid-line\" /><text x=\"441.2\" y=\"124\" class=\"axis-label\">19</text><line x1=\"481.0\" y1=\"14\" x2=\"481.0\" y2=\"112\" class=\"grid-line\" /><text x=\"482.0\" y=\"124\" class=\"axis-label\">20</text><line x1=\"521.8\" y1=\"14\" x2=\"521.8\" y2=\"112\" class=\"grid-line\" /><text x=\"522.8\" y=\"124\" class=\"axis-label\">21</text><line x1=\"562.5\" y1=\"14\" x2=\"562.5\" y2=\"112\" class=\"grid-line\" /><text x=\"563.5\" y=\"124\" class=\"axis-label\">22</text><line x1=\"603.2\" y1=\"14\" x2=\"603.2\" y2=\"112\" class=\"grid-line\" /><text x=\"604.2\" y=\"124\" class=\"axis-label\">23</text><line x1=\"644.0\" y1=\"14\" x2=\"644.0\" y2=\"112\" class=\"grid-line\" />\n      <text x=\"8\" y=\"25.0\" class=\"left-label\">AI (n=6) avg=18.7 spr=8.9</text><line x1=\"265.0\" y1=\"21.0\" x2=\"627.7\" y2=\"21.0\" stroke=\"#65d8ff\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"354.3\" y1=\"21.0\" x2=\"501.7\" y2=\"21.0\" stroke=\"#65d8ff\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"428.0\" cy=\"21.0\" r=\"4.4\" fill=\"#65d8ff\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"39.0\" class=\"left-label\">CD (n=8) avg=18.7 spr=11.0</text><line x1=\"159.1\" y1=\"35.0\" x2=\"607.3\" y2=\"35.0\" stroke=\"#60f5a1\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"352.5\" y1=\"35.0\" x2=\"505.6\" y2=\"35.0\" stroke=\"#60f5a1\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"429.0\" cy=\"35.0\" r=\"4.4\" fill=\"#60f5a1\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"53.0\" class=\"left-label\">N (n=7) avg=19.5 spr=8.2</text><line x1=\"248.7\" y1=\"49.0\" x2=\"582.9\" y2=\"49.0\" stroke=\"#ffcb47\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"398.8\" y1=\"49.0\" x2=\"524.8\" y2=\"49.0\" stroke=\"#ffcb47\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"461.8\" cy=\"49.0\" r=\"4.4\" fill=\"#ffcb47\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"67.0\" class=\"left-label\">RE (n=6) avg=20.6 spr=5.3</text><line x1=\"395.4\" y1=\"63.0\" x2=\"611.4\" y2=\"63.0\" stroke=\"#ff7f66\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"457.4\" y1=\"63.0\" x2=\"552.2\" y2=\"63.0\" stroke=\"#ff7f66\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"504.8\" cy=\"63.0\" r=\"4.4\" fill=\"#ff7f66\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"81.0\" class=\"left-label\">I (n=2) avg=21.9 spr=1.6</text><line x1=\"525.8\" y1=\"77.0\" x2=\"591.0\" y2=\"77.0\" stroke=\"#b28cff\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"535.4\" y1=\"77.0\" x2=\"581.5\" y2=\"77.0\" stroke=\"#b28cff\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"558.4\" cy=\"77.0\" r=\"4.4\" fill=\"#b28cff\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"95.0\" class=\"left-label\">QL (n=4) avg=23.4 spr=0.3</text><line x1=\"611.4\" y1=\"91.0\" x2=\"623.6\" y2=\"91.0\" stroke=\"#6ee7d2\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"614.5\" y1=\"91.0\" x2=\"622.6\" y2=\"91.0\" stroke=\"#6ee7d2\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"618.5\" cy=\"91.0\" r=\"4.4\" fill=\"#6ee7d2\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"109.0\" class=\"left-label\">ETV (n=1) avg=23.9 spr=0.0</text><line x1=\"639.9\" y1=\"105.0\" x2=\"639.9\" y2=\"105.0\" stroke=\"#ffd166\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"635.8\" y1=\"105.0\" x2=\"644.0\" y2=\"105.0\" stroke=\"#ffd166\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"639.9\" cy=\"105.0\" r=\"4.4\" fill=\"#ffd166\" stroke=\"#ffffff\" stroke-width=\"0.8\"/>\n    </svg>\n    ", "compression_svg": "\n    <svg viewBox=\"0 0 660 138\" class=\"plot\">\n      <line x1=\"14.0\" y1=\"10\" x2=\"14.0\" y2=\"110\" class=\"grid-line\" /><text x=\"9.0\" y=\"124.0\" class=\"axis-label\">12</text><line x1=\"66.5\" y1=\"10\" x2=\"66.5\" y2=\"110\" class=\"grid-line\" /><text x=\"61.5\" y=\"124.0\" class=\"axis-label\">13</text><line x1=\"119.0\" y1=\"10\" x2=\"119.0\" y2=\"110\" class=\"grid-line\" /><text x=\"114.0\" y=\"124.0\" class=\"axis-label\">14</text><line x1=\"171.5\" y1=\"10\" x2=\"171.5\" y2=\"110\" class=\"grid-line\" /><text x=\"166.5\" y=\"124.0\" class=\"axis-label\">15</text><line x1=\"224.0\" y1=\"10\" x2=\"224.0\" y2=\"110\" class=\"grid-line\" /><text x=\"219.0\" y=\"124.0\" class=\"axis-label\">16</text><line x1=\"276.5\" y1=\"10\" x2=\"276.5\" y2=\"110\" class=\"grid-line\" /><text x=\"271.5\" y=\"124.0\" class=\"axis-label\">17</text><line x1=\"329.0\" y1=\"10\" x2=\"329.0\" y2=\"110\" class=\"grid-line\" /><text x=\"324.0\" y=\"124.0\" class=\"axis-label\">18</text><line x1=\"381.5\" y1=\"10\" x2=\"381.5\" y2=\"110\" class=\"grid-line\" /><text x=\"376.5\" y=\"124.0\" class=\"axis-label\">19</text><line x1=\"434.0\" y1=\"10\" x2=\"434.0\" y2=\"110\" class=\"grid-line\" /><text x=\"429.0\" y=\"124.0\" class=\"axis-label\">20</text><line x1=\"486.5\" y1=\"10\" x2=\"486.5\" y2=\"110\" class=\"grid-line\" /><text x=\"481.5\" y=\"124.0\" class=\"axis-label\">21</text><line x1=\"539.0\" y1=\"10\" x2=\"539.0\" y2=\"110\" class=\"grid-line\" /><text x=\"534.0\" y=\"124.0\" class=\"axis-label\">22</text><line x1=\"591.5\" y1=\"10\" x2=\"591.5\" y2=\"110\" class=\"grid-line\" /><text x=\"586.5\" y=\"124.0\" class=\"axis-label\">23</text><line x1=\"644.0\" y1=\"10\" x2=\"644.0\" y2=\"110\" class=\"grid-line\" />\n      <rect x=\"15.0\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"41.2\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"67.5\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"93.8\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"120.0\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"146.2\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"172.5\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"198.8\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"225.0\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"251.2\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"277.5\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"303.8\" y=\"82.0\" width=\"24.2\" height=\"28.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"330.0\" y=\"82.0\" width=\"24.2\" height=\"28.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"356.2\" y=\"82.0\" width=\"24.2\" height=\"28.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"382.5\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"408.8\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"435.0\" y=\"82.0\" width=\"24.2\" height=\"28.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"461.2\" y=\"96.0\" width=\"24.2\" height=\"14.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"487.5\" y=\"68.0\" width=\"24.2\" height=\"42.0\" fill=\"#d68f22\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"513.8\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#d68f22\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"540.0\" y=\"54.0\" width=\"24.2\" height=\"56.0\" fill=\"#d68f22\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"566.2\" y=\"82.0\" width=\"24.2\" height=\"28.0\" fill=\"#d0534c\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"592.5\" y=\"26.0\" width=\"24.2\" height=\"84.0\" fill=\"#d0534c\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"618.8\" y=\"68.0\" width=\"24.2\" height=\"42.0\" fill=\"#d0534c\" opacity=\"0.92\" rx=\"1.4\"/>\n      <polyline points=\"27.1,103.0 53.4,105.3 79.6,110.0 105.9,105.3 132.1,100.7 158.4,96.0 184.6,96.0 210.9,96.0 237.1,100.7 263.4,100.7 289.6,96.0 315.9,86.7 342.1,82.0 368.4,91.3 394.6,100.7 420.9,100.7 447.1,96.0 473.4,82.0 499.6,91.3 525.9,77.3 552.1,82.0 578.4,54.0 604.6,58.7 630.9,47.0\" fill=\"none\" stroke=\"#eef3fb\" stroke-width=\"2.8\" opacity=\"0.95\"/>\n      <line x1=\"119.0\" y1=\"10\" x2=\"119.0\" y2=\"110\" stroke=\"#1cff7a\" stroke-width=\"2.1\"/><text x=\"123.0\" y=\"22.0\" class=\"marker-vix\">VIX</text><line x1=\"439.3\" y1=\"10\" x2=\"439.3\" y2=\"110\" stroke=\"#5fb8ff\" stroke-width=\"2.1\" stroke-dasharray=\"4 4\"/><text x=\"443.3\" y=\"22.0\" class=\"marker-avg\">AVG</text><line x1=\"623.0\" y1=\"10\" x2=\"623.0\" y2=\"110\" stroke=\"#ffb000\" stroke-width=\"2.1\"/><text x=\"627.0\" y=\"22.0\" class=\"marker-spy\">SPY</text>\n      <circle cx=\"19.2\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>ASTS | theme=CD | phase= | clock=12.10</title></circle><circle cx=\"134.8\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>ASPI | theme=N | phase= | clock=14.30</title></circle><circle cx=\"155.7\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>LBRT | theme=AI | phase= | clock=14.70</title></circle><circle cx=\"176.7\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>APLD | theme=AI | phase= | clock=15.10</title></circle><circle cx=\"218.8\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>KTOS | theme=CD | phase= | clock=15.90</title></circle><circle cx=\"234.5\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>PANW | theme=CD | phase= | clock=16.20</title></circle><circle cx=\"287.0\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>LTBR | theme=N | phase= | clock=17.20</title></circle><circle cx=\"318.5\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>PLTR | theme=AI | phase= | clock=17.80</title></circle><circle cx=\"323.7\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>REEMF | theme=RE | phase= | clock=17.90</title></circle><circle cx=\"334.3\" cy=\"120.5\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>SMR | theme=N | phase= | clock=18.10</title></circle><circle cx=\"334.3\" cy=\"124.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>UAMY | theme=RE | phase= | clock=18.10</title></circle><circle cx=\"371.0\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>RCAT | theme=CD | phase= | clock=18.80</title></circle><circle cx=\"376.2\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>BBAI | theme=AI | phase= | clock=18.90</title></circle><circle cx=\"439.3\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>NB | theme=RE | phase= | clock=20.10</title></circle><circle cx=\"444.5\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>BKSY | theme=CD | phase= | clock=20.20</title></circle><circle cx=\"460.2\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>LEU | theme=N | phase= | clock=20.50</title></circle><circle cx=\"491.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>ETN | theme=I | phase= | clock=21.10</title></circle><circle cx=\"491.8\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>ONDS | theme=CD | phase= | clock=21.10</title></circle><circle cx=\"491.8\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>USAR | theme=RE | phase= | clock=21.10</title></circle><circle cx=\"539.0\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>UEC | theme=N | phase= | clock=22.00</title></circle><circle cx=\"544.3\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>UUUU | theme=N | phase= | clock=22.10</title></circle><circle cx=\"544.3\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>NVDA | theme=AI | phase= | clock=22.10</title></circle><circle cx=\"560.0\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>DPRO | theme=CD | phase= | clock=22.40</title></circle><circle cx=\"565.2\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>OKLO | theme=N | phase= | clock=22.50</title></circle><circle cx=\"575.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>IE | theme=I | phase= | clock=22.70</title></circle><circle cx=\"596.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>MP | theme=RE | phase= | clock=23.10</title></circle><circle cx=\"596.8\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>RKLB | theme=CD | phase= | clock=23.10</title></circle><circle cx=\"602.0\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>QBTS | theme=QL | phase= | clock=23.20</title></circle><circle cx=\"602.0\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>LAC | theme=RE | phase= | clock=23.20</title></circle><circle cx=\"612.5\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>RGTI | theme=QL | phase= | clock=23.40</title></circle><circle cx=\"612.5\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>QUBT | theme=QL | phase= | clock=23.40</title></circle><circle cx=\"617.8\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>IONQ | theme=QL | phase= | clock=23.50</title></circle><circle cx=\"623.0\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>PWR | theme=AI | phase= | clock=23.60</title></circle><circle cx=\"638.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>SGOV | theme=ETV | phase= | clock=23.90</title></circle>\n      <text x=\"14.0\" y=\"130.0\" class=\"plot-subnote\">Bars=count in each 0.5h bucket \u2022 White line=smoothed density \u2022 Dots=individual symbols</text>\n    </svg>\n    ", "theme_count": 7, "matched_rows": 37, "avg_clock": "20.1", "spread": "11.8", "n": 34, "coiling": "NB, BKSY, LEU, ETN, ONDS, USAR", "active": "UEC, NVDA, UUUU, DPRO, OKLO, IE, MP, RKLB, LAC, QBTS, QUBT, RGTI, IONQ, PWR, SGOV", "theme_legend_html": "<span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#65d8ff;\"></span>AI</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#60f5a1;\"></span>CD</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ffcb47;\"></span>N</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ff7f66;\"></span>RE</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#b28cff;\"></span>I</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#6ee7d2;\"></span>QL</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ffd166;\"></span>ETV</span>"}, "ROTATION": {"theme_svg": "\n    <svg viewBox=\"0 0 660 126\" class=\"plot\">\n      <line x1=\"155.0\" y1=\"14\" x2=\"155.0\" y2=\"126\" class=\"grid-line\" /><text x=\"156.0\" y=\"138\" class=\"axis-label\">12</text><line x1=\"195.8\" y1=\"14\" x2=\"195.8\" y2=\"126\" class=\"grid-line\" /><text x=\"196.8\" y=\"138\" class=\"axis-label\">13</text><line x1=\"236.5\" y1=\"14\" x2=\"236.5\" y2=\"126\" class=\"grid-line\" /><text x=\"237.5\" y=\"138\" class=\"axis-label\">14</text><line x1=\"277.2\" y1=\"14\" x2=\"277.2\" y2=\"126\" class=\"grid-line\" /><text x=\"278.2\" y=\"138\" class=\"axis-label\">15</text><line x1=\"318.0\" y1=\"14\" x2=\"318.0\" y2=\"126\" class=\"grid-line\" /><text x=\"319.0\" y=\"138\" class=\"axis-label\">16</text><line x1=\"358.8\" y1=\"14\" x2=\"358.8\" y2=\"126\" class=\"grid-line\" /><text x=\"359.8\" y=\"138\" class=\"axis-label\">17</text><line x1=\"399.5\" y1=\"14\" x2=\"399.5\" y2=\"126\" class=\"grid-line\" /><text x=\"400.5\" y=\"138\" class=\"axis-label\">18</text><line x1=\"440.2\" y1=\"14\" x2=\"440.2\" y2=\"126\" class=\"grid-line\" /><text x=\"441.2\" y=\"138\" class=\"axis-label\">19</text><line x1=\"481.0\" y1=\"14\" x2=\"481.0\" y2=\"126\" class=\"grid-line\" /><text x=\"482.0\" y=\"138\" class=\"axis-label\">20</text><line x1=\"521.8\" y1=\"14\" x2=\"521.8\" y2=\"126\" class=\"grid-line\" /><text x=\"522.8\" y=\"138\" class=\"axis-label\">21</text><line x1=\"562.5\" y1=\"14\" x2=\"562.5\" y2=\"126\" class=\"grid-line\" /><text x=\"563.5\" y=\"138\" class=\"axis-label\">22</text><line x1=\"603.2\" y1=\"14\" x2=\"603.2\" y2=\"126\" class=\"grid-line\" /><text x=\"604.2\" y=\"138\" class=\"axis-label\">23</text><line x1=\"644.0\" y1=\"14\" x2=\"644.0\" y2=\"126\" class=\"grid-line\" />\n      <text x=\"8\" y=\"25.0\" class=\"left-label\">Macro (n=1) avg=14.0 spr=0.0</text><line x1=\"236.5\" y1=\"21.0\" x2=\"236.5\" y2=\"21.0\" stroke=\"#65d8ff\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"232.4\" y1=\"21.0\" x2=\"240.6\" y2=\"21.0\" stroke=\"#65d8ff\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"236.5\" cy=\"21.0\" r=\"4.4\" fill=\"#65d8ff\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"39.0\" class=\"left-label\">CD (n=16) avg=18.7 spr=11.0</text><line x1=\"159.1\" y1=\"35.0\" x2=\"607.3\" y2=\"35.0\" stroke=\"#60f5a1\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"368.7\" y1=\"35.0\" x2=\"488.9\" y2=\"35.0\" stroke=\"#60f5a1\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"428.8\" cy=\"35.0\" r=\"4.4\" fill=\"#60f5a1\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"53.0\" class=\"left-label\">N (n=8) avg=19.6 spr=8.2</text><line x1=\"248.7\" y1=\"49.0\" x2=\"582.9\" y2=\"49.0\" stroke=\"#ffcb47\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"408.0\" y1=\"49.0\" x2=\"525.4\" y2=\"49.0\" stroke=\"#ffcb47\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"466.7\" cy=\"49.0\" r=\"4.4\" fill=\"#ffcb47\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"67.0\" class=\"left-label\">RE (n=8) avg=20.2 spr=7.3</text><line x1=\"313.9\" y1=\"63.0\" x2=\"611.4\" y2=\"63.0\" stroke=\"#ff7f66\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"434.8\" y1=\"63.0\" x2=\"544.6\" y2=\"63.0\" stroke=\"#ff7f66\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"489.7\" cy=\"63.0\" r=\"4.4\" fill=\"#ff7f66\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"81.0\" class=\"left-label\">AI (n=14) avg=20.4 spr=9.0</text><line x1=\"265.0\" y1=\"77.0\" x2=\"631.8\" y2=\"77.0\" stroke=\"#b28cff\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"436.1\" y1=\"77.0\" x2=\"559.1\" y2=\"77.0\" stroke=\"#b28cff\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"497.6\" cy=\"77.0\" r=\"4.4\" fill=\"#b28cff\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"95.0\" class=\"left-label\">I (n=3) avg=21.6 spr=1.6</text><line x1=\"525.8\" y1=\"91.0\" x2=\"591.0\" y2=\"91.0\" stroke=\"#6ee7d2\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"528.7\" y1=\"91.0\" x2=\"566.4\" y2=\"91.0\" stroke=\"#6ee7d2\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"547.6\" cy=\"91.0\" r=\"4.4\" fill=\"#6ee7d2\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"109.0\" class=\"left-label\">QL (n=4) avg=23.4 spr=0.3</text><line x1=\"611.4\" y1=\"105.0\" x2=\"623.6\" y2=\"105.0\" stroke=\"#ffd166\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"614.5\" y1=\"105.0\" x2=\"622.6\" y2=\"105.0\" stroke=\"#ffd166\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"618.5\" cy=\"105.0\" r=\"4.4\" fill=\"#ffd166\" stroke=\"#ffffff\" stroke-width=\"0.8\"/><text x=\"8\" y=\"123.0\" class=\"left-label\">ETV (n=1) avg=23.9 spr=0.0</text><line x1=\"639.9\" y1=\"119.0\" x2=\"639.9\" y2=\"119.0\" stroke=\"#ff8fab\" stroke-width=\"2.0\" stroke-linecap=\"round\" opacity=\"0.90\"/><line x1=\"635.8\" y1=\"119.0\" x2=\"644.0\" y2=\"119.0\" stroke=\"#ff8fab\" stroke-width=\"6.0\" stroke-linecap=\"round\" opacity=\"0.75\"/><circle cx=\"639.9\" cy=\"119.0\" r=\"4.4\" fill=\"#ff8fab\" stroke=\"#ffffff\" stroke-width=\"0.8\"/>\n    </svg>\n    ", "compression_svg": "\n    <svg viewBox=\"0 0 660 138\" class=\"plot\">\n      <line x1=\"14.0\" y1=\"10\" x2=\"14.0\" y2=\"110\" class=\"grid-line\" /><text x=\"9.0\" y=\"124.0\" class=\"axis-label\">12</text><line x1=\"66.5\" y1=\"10\" x2=\"66.5\" y2=\"110\" class=\"grid-line\" /><text x=\"61.5\" y=\"124.0\" class=\"axis-label\">13</text><line x1=\"119.0\" y1=\"10\" x2=\"119.0\" y2=\"110\" class=\"grid-line\" /><text x=\"114.0\" y=\"124.0\" class=\"axis-label\">14</text><line x1=\"171.5\" y1=\"10\" x2=\"171.5\" y2=\"110\" class=\"grid-line\" /><text x=\"166.5\" y=\"124.0\" class=\"axis-label\">15</text><line x1=\"224.0\" y1=\"10\" x2=\"224.0\" y2=\"110\" class=\"grid-line\" /><text x=\"219.0\" y=\"124.0\" class=\"axis-label\">16</text><line x1=\"276.5\" y1=\"10\" x2=\"276.5\" y2=\"110\" class=\"grid-line\" /><text x=\"271.5\" y=\"124.0\" class=\"axis-label\">17</text><line x1=\"329.0\" y1=\"10\" x2=\"329.0\" y2=\"110\" class=\"grid-line\" /><text x=\"324.0\" y=\"124.0\" class=\"axis-label\">18</text><line x1=\"381.5\" y1=\"10\" x2=\"381.5\" y2=\"110\" class=\"grid-line\" /><text x=\"376.5\" y=\"124.0\" class=\"axis-label\">19</text><line x1=\"434.0\" y1=\"10\" x2=\"434.0\" y2=\"110\" class=\"grid-line\" /><text x=\"429.0\" y=\"124.0\" class=\"axis-label\">20</text><line x1=\"486.5\" y1=\"10\" x2=\"486.5\" y2=\"110\" class=\"grid-line\" /><text x=\"481.5\" y=\"124.0\" class=\"axis-label\">21</text><line x1=\"539.0\" y1=\"10\" x2=\"539.0\" y2=\"110\" class=\"grid-line\" /><text x=\"534.0\" y=\"124.0\" class=\"axis-label\">22</text><line x1=\"591.5\" y1=\"10\" x2=\"591.5\" y2=\"110\" class=\"grid-line\" /><text x=\"586.5\" y=\"124.0\" class=\"axis-label\">23</text><line x1=\"644.0\" y1=\"10\" x2=\"644.0\" y2=\"110\" class=\"grid-line\" />\n      <rect x=\"15.0\" y=\"99.5\" width=\"24.2\" height=\"10.5\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"41.2\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"67.5\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"93.8\" y=\"89.0\" width=\"24.2\" height=\"21.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"120.0\" y=\"78.5\" width=\"24.2\" height=\"31.5\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"146.2\" y=\"99.5\" width=\"24.2\" height=\"10.5\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"172.5\" y=\"89.0\" width=\"24.2\" height=\"21.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"198.8\" y=\"89.0\" width=\"24.2\" height=\"21.0\" fill=\"#26c281\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"225.0\" y=\"89.0\" width=\"24.2\" height=\"21.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"251.2\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"277.5\" y=\"68.0\" width=\"24.2\" height=\"42.0\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"303.8\" y=\"78.5\" width=\"24.2\" height=\"31.5\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"330.0\" y=\"78.5\" width=\"24.2\" height=\"31.5\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"356.2\" y=\"78.5\" width=\"24.2\" height=\"31.5\" fill=\"#46e08d\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"382.5\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"408.8\" y=\"110.0\" width=\"24.2\" height=\"0.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"435.0\" y=\"68.0\" width=\"24.2\" height=\"42.0\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"461.2\" y=\"78.5\" width=\"24.2\" height=\"31.5\" fill=\"#d0ae23\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"487.5\" y=\"57.5\" width=\"24.2\" height=\"52.5\" fill=\"#d68f22\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"513.8\" y=\"99.5\" width=\"24.2\" height=\"10.5\" fill=\"#d68f22\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"540.0\" y=\"47.0\" width=\"24.2\" height=\"63.0\" fill=\"#d68f22\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"566.2\" y=\"68.0\" width=\"24.2\" height=\"42.0\" fill=\"#d0534c\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"592.5\" y=\"26.0\" width=\"24.2\" height=\"84.0\" fill=\"#d0534c\" opacity=\"0.92\" rx=\"1.4\"/><rect x=\"618.8\" y=\"47.0\" width=\"24.2\" height=\"63.0\" fill=\"#d0534c\" opacity=\"0.92\" rx=\"1.4\"/>\n      <polyline points=\"27.1,104.8 53.4,106.5 79.6,103.0 105.9,92.5 132.1,89.0 158.4,89.0 184.6,92.5 210.9,89.0 237.1,96.0 263.4,89.0 289.6,85.5 315.9,75.0 342.1,78.5 368.4,89.0 394.6,99.5 420.9,96.0 447.1,85.5 473.4,68.0 499.6,78.5 525.9,68.0 552.1,71.5 578.4,47.0 604.6,47.0 630.9,36.5\" fill=\"none\" stroke=\"#eef3fb\" stroke-width=\"2.8\" opacity=\"0.95\"/>\n      <line x1=\"119.0\" y1=\"10\" x2=\"119.0\" y2=\"110\" stroke=\"#1cff7a\" stroke-width=\"2.1\"/><text x=\"123.0\" y=\"22.0\" class=\"marker-vix\">VIX</text><line x1=\"421.5\" y1=\"10\" x2=\"421.5\" y2=\"110\" stroke=\"#5fb8ff\" stroke-width=\"2.1\" stroke-dasharray=\"4 4\"/><text x=\"425.5\" y=\"22.0\" class=\"marker-avg\">AVG</text><line x1=\"623.0\" y1=\"10\" x2=\"623.0\" y2=\"110\" stroke=\"#ffb000\" stroke-width=\"2.1\"/><text x=\"627.0\" y=\"22.0\" class=\"marker-spy\">SPY</text>\n      <circle cx=\"19.2\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>ASTS | theme=CD | phase= | clock=12.10</title></circle><circle cx=\"92.8\" cy=\"117.0\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>XLC | theme=nan | phase= | clock=13.50</title></circle><circle cx=\"98.0\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>JETS | theme=nan | phase= | clock=13.60</title></circle><circle cx=\"119.0\" cy=\"117.0\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>XRT | theme=nan | phase= | clock=14.00</title></circle><circle cx=\"119.0\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>.VIX | theme=Macro | phase= | clock=14.00</title></circle><circle cx=\"134.8\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>ASPI | theme=N | phase= | clock=14.30</title></circle><circle cx=\"155.7\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>LBRT | theme=AI | phase= | clock=14.70</title></circle><circle cx=\"176.7\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>APLD | theme=AI | phase= | clock=15.10</title></circle><circle cx=\"176.7\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>KRE | theme=nan | phase= | clock=15.10</title></circle><circle cx=\"218.8\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>KTOS | theme=CD | phase= | clock=15.90</title></circle><circle cx=\"218.8\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>TGB | theme=RE | phase= | clock=15.90</title></circle><circle cx=\"234.5\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>PANW | theme=CD | phase= | clock=16.20</title></circle><circle cx=\"239.8\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>GILT | theme=CD | phase= | clock=16.30</title></circle><circle cx=\"287.0\" cy=\"117.0\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>OKTA | theme=CD | phase= | clock=17.20</title></circle><circle cx=\"287.0\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>NOC | theme=CD | phase= | clock=17.20</title></circle><circle cx=\"287.0\" cy=\"124.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>LTBR | theme=N | phase= | clock=17.20</title></circle><circle cx=\"297.5\" cy=\"117.0\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>BKLN | theme=nan | phase= | clock=17.40</title></circle><circle cx=\"302.8\" cy=\"120.5\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>CRWD | theme=CD | phase= | clock=17.50</title></circle><circle cx=\"318.5\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>PLTR | theme=AI | phase= | clock=17.80</title></circle><circle cx=\"323.7\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>REEMF | theme=RE | phase= | clock=17.90</title></circle><circle cx=\"334.3\" cy=\"120.5\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>UAMY | theme=RE | phase= | clock=18.10</title></circle><circle cx=\"334.3\" cy=\"124.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>SMR | theme=N | phase= | clock=18.10</title></circle><circle cx=\"339.5\" cy=\"117.0\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>ZS | theme=CD | phase= | clock=18.20</title></circle><circle cx=\"360.5\" cy=\"117.0\" r=\"1.6\" fill=\"#7aa9d8\" opacity=\"0.72\"><title>BE | theme=AI | phase= | clock=18.60</title></circle><circle cx=\"371.0\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>RCAT | theme=CD | phase= | clock=18.80</title></circle><circle cx=\"376.2\" cy=\"117.0\" r=\"2.0\" fill=\"#8fd4ff\" opacity=\"0.96\"><title>BBAI | theme=AI | phase= | clock=18.90</title></circle><circle cx=\"434.0\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>ZENA | theme=CD | phase= | clock=20.00</title></circle><circle cx=\"439.3\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>NB | theme=RE | phase= | clock=20.10</title></circle><circle cx=\"444.5\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>IBM | theme=AI | phase= | clock=20.20</title></circle><circle cx=\"444.5\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>BKSY | theme=CD | phase= | clock=20.20</title></circle><circle cx=\"460.2\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>NNE | theme=N | phase= | clock=20.50</title></circle><circle cx=\"460.2\" cy=\"120.5\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>DDOG | theme=AI | phase= | clock=20.50</title></circle><circle cx=\"460.2\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>LEU | theme=N | phase= | clock=20.50</title></circle><circle cx=\"491.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>ONDS | theme=CD | phase= | clock=21.10</title></circle><circle cx=\"491.8\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>USAR | theme=RE | phase= | clock=21.10</title></circle><circle cx=\"491.8\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>ETN | theme=I | phase= | clock=21.10</title></circle><circle cx=\"491.8\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>LUNR | theme=CD | phase= | clock=21.10</title></circle><circle cx=\"491.8\" cy=\"120.5\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>SNPS | theme=I | phase= | clock=21.10</title></circle><circle cx=\"518.0\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>ALAB | theme=AI | phase= | clock=21.60</title></circle><circle cx=\"539.0\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>UEC | theme=N | phase= | clock=22.00</title></circle><circle cx=\"544.3\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>UUUU | theme=N | phase= | clock=22.10</title></circle><circle cx=\"544.3\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>NVDA | theme=AI | phase= | clock=22.10</title></circle><circle cx=\"549.5\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>UMAC | theme=CD | phase= | clock=22.20</title></circle><circle cx=\"554.8\" cy=\"120.5\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>SLI | theme=RE | phase= | clock=22.30</title></circle><circle cx=\"560.0\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>DPRO | theme=CD | phase= | clock=22.40</title></circle><circle cx=\"565.2\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>OKLO | theme=N | phase= | clock=22.50</title></circle><circle cx=\"570.5\" cy=\"124.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>VRT | theme=AI | phase= | clock=22.60</title></circle><circle cx=\"575.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>IE | theme=I | phase= | clock=22.70</title></circle><circle cx=\"586.2\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>ORCL | theme=AI | phase= | clock=22.90</title></circle><circle cx=\"596.8\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>MP | theme=RE | phase= | clock=23.10</title></circle><circle cx=\"596.8\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>RKLB | theme=CD | phase= | clock=23.10</title></circle><circle cx=\"602.0\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>XLRE | theme=nan | phase= | clock=23.20</title></circle><circle cx=\"602.0\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>LAC | theme=RE | phase= | clock=23.20</title></circle><circle cx=\"602.0\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>QBTS | theme=QL | phase= | clock=23.20</title></circle><circle cx=\"612.5\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>QUBT | theme=QL | phase= | clock=23.40</title></circle><circle cx=\"612.5\" cy=\"120.5\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>MSFT | theme=AI | phase= | clock=23.40</title></circle><circle cx=\"612.5\" cy=\"124.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>RGTI | theme=QL | phase= | clock=23.40</title></circle><circle cx=\"617.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>IONQ | theme=QL | phase= | clock=23.50</title></circle><circle cx=\"623.0\" cy=\"120.5\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>PWR | theme=AI | phase= | clock=23.60</title></circle><circle cx=\"628.2\" cy=\"117.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>CRWV | theme=AI | phase= | clock=23.70</title></circle><circle cx=\"638.8\" cy=\"117.0\" r=\"2.3\" fill=\"#ffcf57\" opacity=\"0.98\"><title>SGOV | theme=ETV | phase= | clock=23.90</title></circle><circle cx=\"638.8\" cy=\"120.5\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>SHV | theme=nan | phase= | clock=23.90</title></circle><circle cx=\"638.8\" cy=\"124.0\" r=\"2.3\" fill=\"#f59d52\" opacity=\"0.98\"><title>SGOV | theme=nan | phase= | clock=23.90</title></circle>\n      <text x=\"14.0\" y=\"130.0\" class=\"plot-subnote\">Bars=count in each 0.5h bucket \u2022 White line=smoothed density \u2022 Dots=individual symbols</text>\n    </svg>\n    ", "theme_count": 8, "matched_rows": 72, "avg_clock": "19.8", "spread": "11.8", "n": 63, "coiling": "ZENA, NB, IBM, BKSY, LEU, DDOG, NNE, ETN, USAR, LUNR, SNPS, ONDS", "active": "UEC, NVDA, UUUU, UMAC, SLI, DPRO, OKLO, VRT, IE, ORCL, MP, RKLB", "theme_legend_html": "<span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#65d8ff;\"></span>Macro</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#60f5a1;\"></span>CD</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ffcb47;\"></span>N</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ff7f66;\"></span>RE</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#b28cff;\"></span>AI</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#6ee7d2;\"></span>I</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ffd166;\"></span>QL</span><span class=\"legend-chip\"><span class=\"legend-dot\" style=\"background:#ff8fab;\"></span>ETV</span>"}};
+const DEFAULT_SCOPE = "PORTFOLIO";
+const ROTATION_ROWS = 71;
+const MASTER_ROWS = 143;
+const CLOSEDATE_SOURCE = "CLI:--close-date";
+const GEX_PROV = "EXACT:SPY_GEX_Light_2026-04-16.csv";
+const BYSTRIKE_PROV = "EXACT:SPY_GEX_ByStrike_2026-04-16.csv";
+
+function setScope(scopeName) {
+  const b = SCOPE_BUNDLE[scopeName];
+  if (!b) return;
+
+  document.getElementById("themePlot").innerHTML = b.theme_svg;
+  document.getElementById("compressionPlot").innerHTML = b.compression_svg;
+  document.getElementById("themeLegend").innerHTML = b.theme_legend_html;
+  document.getElementById("themeMeta").textContent = "center + dispersion • Scope=" + scopeName;
+  document.getElementById("compressionMeta").textContent =
+    "scope=" + scopeName + " • n=" + b.n + " • avg=" + b.avg_clock + " • spread=" + b.spread;
+  document.getElementById("zoneText").innerHTML =
+    "<strong>20+ Zone:</strong> Coiling(20–22) = " + b.coiling + " | Active(22–24) = " + b.active;
+  document.getElementById("headLine2").textContent =
+    "Rotation=" + ROTATION_ROWS +
+    " | Master=" + MASTER_ROWS +
+    " | Joined=" + b.matched_rows +
+    " | Scope=" + scopeName +
+    " | Themes=" + b.theme_count +
+    " | CloseDate=" + CLOSEDATE_SOURCE +
+    " | GEX=" + GEX_PROV +
+    " | ByStrike=" + BYSTRIKE_PROV;
+
+  document.getElementById("btnPORTFOLIO").classList.remove("active");
+  document.getElementById("btnROTATION").classList.remove("active");
+  document.getElementById("btn" + scopeName).classList.add("active");
+}
+setScope(DEFAULT_SCOPE);
+</script>
+</body>
+</html>
