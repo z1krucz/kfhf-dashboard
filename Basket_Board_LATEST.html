@@ -1,0 +1,806 @@
+
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Basket Board</title>
+        <style>
+
+body {
+    margin: 0;
+    background: #081023;
+    color: #e9eefb;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.app {
+    padding: 8px;
+}
+
+.meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #a9b8dd;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.board-page {
+    margin-bottom: 10px;
+}
+
+.board-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid rgba(180, 200, 255, 0.18);
+    border-radius: 9px;
+    background: linear-gradient(180deg, rgba(24,38,79,0.95), rgba(14,25,55,0.95));
+    margin-bottom: 8px;
+}
+
+.board-title {
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+}
+
+.board-page-count {
+    font-size: 12px;
+    color: #c0ccee;
+}
+
+.basket-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.basket-card {
+    min-height: 430px;
+    height: 430px;
+    border: 1px solid rgba(195, 210, 255, 0.16);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(28,42,88,0.96), rgba(12,22,53,0.96));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 34px 58px 146px 150px 56px;
+}
+
+.basket-placeholder {
+    background: linear-gradient(180deg, rgba(14,24,54,0.96), rgba(8,16,38,0.96));
+}
+
+.placeholder-inner {
+    grid-row: 1 / span 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #6f82b3;
+    padding: 12px;
+}
+
+.placeholder-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.placeholder-text {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.basket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 12px 5px 12px;
+    border-bottom: 1px solid rgba(200,210,255,0.14);
+}
+
+.basket-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.basket-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #64ff92;
+    box-shadow: 0 0 7px rgba(100,255,146,0.6);
+    flex: 0 0 auto;
+}
+
+.basket-title {
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.basket-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.basket-dte {
+    font-size: 12px;
+    color: #d8e2ff;
+}
+
+.badge-live {
+    font-size: 11px;
+    font-weight: bold;
+    color: #8effb4;
+    border: 1px solid rgba(142,255,180,0.35);
+    border-radius: 7px;
+    padding: 2px 8px;
+    background: rgba(30,84,58,0.35);
+}
+
+.basket-pl-strip {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    padding: 4px 10px 3px 10px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(200,210,255,0.08);
+}
+
+.strip-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.strip-row-1 {
+    font-size: 12px;
+}
+
+.strip-row-2 {
+    font-size: 11px;
+}
+
+.basket-total-label {
+    color: #d6def8;
+    font-weight: bold;
+}
+
+.basket-total-value {
+    font-size: 13px;
+    font-weight: bold;
+    min-width: 130px;
+}
+
+.strip-item {
+    color: #dbe3ff;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.strip-value {
+    color: #f0f5ff;
+    font-weight: bold;
+}
+
+.theta-na {
+    color: #8ea2d8;
+    font-weight: bold;
+}
+
+.theta-live {
+    color: #dfe7ff;
+}
+
+.action-hold {
+    color: #d7e4ff;
+}
+
+.action-trim {
+    color: #f3c86c;
+}
+
+.action-take {
+    color: #67ff95;
+}
+
+.action-cut-watch {
+    color: #ff6e7d;
+}
+
+.risk-low {
+    color: #9fc0ff;
+}
+
+.risk-mod {
+    color: #f3c86c;
+}
+
+.risk-high {
+    color: #ff6e7d;
+}
+
+.target-meter-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.target-meter-label {
+    color: #dbe3ff;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.target-meter-bar {
+    width: 80px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.10);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.10);
+}
+
+.target-meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #57d8ff, #67ff95);
+}
+
+.pos {
+    color: #58ff89;
+}
+
+.neg {
+    color: #ff6574;
+}
+
+.basket-chart {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 6px;
+    padding: 0 10px 0 8px;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.chart-axis-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #e2e8ff;
+    font-size: 11px;
+    padding: 4px 0 30px 4px;
+}
+
+.chart-main {
+    display: grid;
+    grid-template-rows: 120px 26px;
+    min-height: 0;
+    overflow: visible;
+}
+
+.chart-svg-wrap {
+    position: relative;
+    height: 120px;
+    border-top: 1px solid rgba(200,210,255,0.08);
+    border-bottom: 1px solid rgba(200,210,255,0.08);
+    background:
+        linear-gradient(180deg, rgba(64,77,132,0.22), rgba(41,54,102,0.06)),
+        repeating-linear-gradient(
+            to bottom,
+            rgba(200,210,255,0.05) 0px,
+            rgba(200,210,255,0.05) 1px,
+            transparent 1px,
+            transparent 40px
+        );
+    overflow: hidden;
+}
+
+.chart-svg-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.chart-time-axis {
+    position: relative;
+    display: grid;
+    height: 26px;
+    min-height: 26px;
+    padding: 0;
+    overflow: visible;
+    border-top: 1px solid rgba(180, 200, 255, 0.12);
+    z-index: 1;
+}
+
+.time-block {
+    position: relative;
+    height: 26px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-left: 10px;
+    overflow: visible;
+}
+
+.time-block.first {
+    padding-left: 0;
+}
+
+.time-block.last {
+    padding-right: 0;
+}
+
+.time-label {
+    position: relative;
+    z-index: 3;
+    font-size: 11px;
+    line-height: 11px;
+    color: #b9c8ef;
+    font-weight: bold;
+    white-space: nowrap;
+    padding-top: 8px;
+}
+
+.time-tick {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 7px;
+    background: rgba(200, 215, 255, 0.78);
+    z-index: 1;
+}
+
+.time-separator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 26px;
+    background: rgba(200, 215, 255, 0.18);
+    z-index: 0;
+}
+
+.level-line {
+    stroke-width: 1;
+    opacity: 0.40;
+    stroke-dasharray: 4 5;
+}
+
+.level-top { stroke: #c7d7ff; }
+.level-mid { stroke: #9ab0e9; }
+.level-neg { stroke: #8fa1db; }
+
+.threshold {
+    stroke-width: 2;
+    stroke-dasharray: 10 7;
+    opacity: 0.90;
+}
+
+.take-line { stroke: #67ff95; }
+.cut-line { stroke: #ff6e7d; }
+
+.day-separator {
+    stroke: rgba(200, 215, 255, 0.22);
+    stroke-width: 1.1;
+}
+
+.basket-line {
+    fill: none;
+    stroke: #f1ea77;
+    stroke-width: 2.6;
+    filter: drop-shadow(0 0 2px rgba(241,234,119,0.35));
+}
+
+.chart-right-label {
+    position: absolute;
+    right: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.1px;
+}
+
+.chart-right-label.take {
+    top: 6px;
+    color: #67ff95;
+}
+
+.chart-right-label.cut {
+    top: 52px;
+    color: #ff6e7d;
+}
+
+.legs-section {
+    padding: 4px 10px 4px 10px;
+    min-height: 0;
+    max-height: 150px;
+    overflow: hidden;
+}
+
+.legs-title {
+    font-size: 13px;
+    color: #dde6ff;
+    margin-bottom: 3px;
+    letter-spacing: 0.2px;
+    font-weight: bold;
+}
+
+.legs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: fixed;
+}
+
+/* Key fix: do NOT squash everything.
+   Just reclaim width from CONTRACT and keep the numeric area readable. */
+.legs-table .col-contract { width: 37%; }
+.legs-table .col-qty { width: 6%; }
+.legs-table .col-mark { width: 8%; }
+.legs-table .col-cost { width: 9%; }
+.legs-table .col-pl { width: 9%; }
+.legs-table .col-plpct { width: 8%; }
+.legs-table .col-delta { width: 7%; }
+.legs-table .col-theta { width: 7%; }
+.legs-table .col-state { width: 9%; }
+
+.legs-table thead th {
+    text-align: left;
+    font-size: 10px;
+    color: #d0daf8;
+    padding: 4px 4px 5px 4px;
+    border-top: 1px solid rgba(200,210,255,0.09);
+    border-bottom: 1px solid rgba(200,210,255,0.09);
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.legs-table thead th:not(:first-child) {
+    text-align: right;
+}
+
+.legs-table thead th:last-child {
+    text-align: center;
+}
+
+.legs-table tbody tr {
+    height: 22px;
+}
+
+.legs-table tbody td {
+    padding: 2px 4px;
+    border-bottom: 1px solid rgba(200,210,255,0.05);
+    vertical-align: middle;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.contract-col {
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.qty-col {
+    text-align: right;
+    font-weight: bold;
+    color: #d9e4ff;
+}
+
+.num-col {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.state-col {
+    text-align: center;
+    overflow: hidden;
+}
+
+.state-pill {
+    display: inline-block;
+    max-width: 100%;
+    padding: 1px 5px;
+    border-radius: 7px;
+    font-size: 10px;
+    border: 1px solid rgba(184,197,238,0.16);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.no-legs {
+    color: #7f93c8;
+    text-align: center;
+    padding: 12px 0 !important;
+}
+
+.blank-leg-row td {
+    color: transparent;
+}
+
+.basket-legend-strip {
+    padding: 7px 10px 8px 10px;
+    border-top: 1px solid rgba(200,210,255,0.10);
+    color: #b9c8ef;
+    font-size: 11px;
+    min-height: 56px;
+    max-height: 56px;
+    overflow: hidden;
+}
+
+.placeholder-strip {
+    display: flex;
+    align-items: center;
+}
+
+.legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.legend-row.note-row {
+    margin-bottom: 0;
+    margin-top: 1px;
+}
+
+.legend-chip {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 7px;
+    border: 1px solid rgba(184,197,238,0.16);
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.legend-note {
+    color: #b9c8ef;
+    font-size: 10px;
+}
+
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <div class="meta-bar">
+                <div>AsOf: 2026-04-17 08:10:18 PM</div>
+                <div>Project: KFHF Basket Board</div>
+            </div>
+            
+    <section class="board-page">
+        <div class="board-page-header">
+            <div class="board-title">INTRADAY BASKET BOARD</div>
+            <div class="board-page-count">PAGE 1 / 1</div>
+        </div>
+
+        <div class="basket-grid">
+            
+    <div class="basket-card">
+        <div class="basket-header">
+            <div class="basket-title-wrap">
+                <div class="basket-dot"></div>
+                <div class="basket-title">SPY Gamma Basket</div>
+            </div>
+            <div class="basket-header-right">
+                <div class="basket-dte">DTE: 0</div>
+                <div class="badge-live">ACTIVE</div>
+            </div>
+        </div>
+
+        <div class="basket-pl-strip">
+            <div class="strip-row strip-row-1">
+                <div class="basket-total-label">TOTAL P/L:</div>
+                <div class="basket-total-value pos">37.2% ($305.0)</div>
+                <div class="strip-item">REALIZED <span class="strip-value">$0.0</span></div>
+                <div class="strip-item">UNREALIZED <span class="strip-value">$305.0</span></div>
+                <div class="strip-item">ACTION <span class="strip-value action-trim">TRIM</span></div>
+            </div>
+            <div class="strip-row strip-row-2">
+                
+    <div class="target-meter-wrap">
+        <div class="target-meter-label">TARGET 74%</div>
+        <div class="target-meter-bar">
+            <div class="target-meter-fill" style="width:74.4%"></div>
+        </div>
+    </div>
+    
+                <div class="strip-item">Δ NET <span class="strip-value">0.64</span></div>
+                <div class="strip-item">Θ NET <span class="strip-value theta-na">N/A</span></div>
+                <div class="strip-item">RISK <span class="strip-value risk-high">HIGH</span></div>
+                <div class="strip-item">PEAK <span class="strip-value">37.2%</span></div>
+                <div class="strip-item">GIVEBACK <span class="strip-value">0.0%</span></div>
+            </div>
+        </div>
+
+        <div class="basket-chart">
+            <div class="chart-axis-left">
+                <div>75%</div>
+                <div>25%</div>
+                <div>-30%</div>
+            </div>
+            <div class="chart-main">
+                <div class="chart-svg-wrap">
+                    <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+                        
+        <line x1="0" y1="0.0" x2="1000" y2="0.0" class="level-line level-top"></line>
+        <line x1="0" y1="60.0" x2="1000" y2="60.0" class="level-line level-mid"></line>
+        <line x1="0" y1="120.0" x2="1000" y2="120.0" class="level-line level-neg"></line>
+        <line x1="0" y1="28.6" x2="1000" y2="28.6" class="threshold take-line"></line>
+        <line x1="0" y1="94.3" x2="1000" y2="94.3" class="threshold cut-line"></line>
+        <polyline points="0.0,43.2 66.7,43.2 133.3,85.7 200.0,85.7 266.7,43.2 333.3,43.2 400.0,43.2 466.7,43.2 533.3,43.2 600.0,43.2 666.7,43.2 733.3,43.2 800.0,43.2 866.7,43.2 933.3,43.2 1000.0,43.2" class="basket-line"></polyline>
+        <polygon points="66.7,36.2 59.7,48.2 73.7,48.2" fill="#4f7dff" stroke="rgba(255,255,255,0.35)" stroke-width="1"></polygon><polygon points="333.3,36.2 326.3,48.2 340.3,48.2" fill="#65ff8f" stroke="rgba(255,255,255,0.35)" stroke-width="1"></polygon><polygon points="600.0,36.2 593.0,48.2 607.0,48.2" fill="#b06cff" stroke="rgba(255,255,255,0.35)" stroke-width="1"></polygon><polygon points="933.3,36.2 926.3,48.2 940.3,48.2" fill="#d8a84a" stroke="rgba(255,255,255,0.35)" stroke-width="1"></polygon><circle cx="1000.0" cy="43.2" r="3.8" fill="#f1ea77" stroke="rgba(255,255,255,0.45)" stroke-width="1.0"></circle>
+        
+                    </svg>
+                    <div class="chart-right-label take">TAKE 50%</div>
+                    <div class="chart-right-label cut">CUT -25%</div>
+                </div>
+                
+    <div class="chart-time-axis" style="grid-template-columns:1fr;">
+        
+            <div class="time-block first last">
+                
+                <div class="time-tick"></div>
+                <div class="time-label">Fri 4/17</div>
+            </div>
+            
+    </div>
+    
+            </div>
+        </div>
+
+        <div class="legs-section">
+            <div class="legs-title">LEGS</div>
+            <table class="legs-table">
+                <colgroup>
+                    <col class="col-contract">
+                    <col class="col-qty">
+                    <col class="col-mark">
+                    <col class="col-cost">
+                    <col class="col-pl">
+                    <col class="col-plpct">
+                    <col class="col-delta">
+                    <col class="col-theta">
+                    <col class="col-state">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>CONTRACT</th>
+                        <th>QTY</th>
+                        <th>MARK</th>
+                        <th>COST</th>
+                        <th>P/L</th>
+                        <th>P/L%</th>
+                        <th>DELTA</th>
+                        <th>THETA</th>
+                        <th>STATE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+    <tr>
+        <td class="contract-col" style="color:#4f7dff;" title="SPY 2026-04-17 650C">SPY 2026-04-17 650C</td>
+        <td class="qty-col">1</td>
+        <td class="num-col">5.25</td>
+        <td class="num-col">310.0</td>
+        <td class="num-col pos">215.0</td>
+        <td class="num-col pos">69.4</td>
+        <td class="num-col pos">0.56</td>
+        <td class="num-col theta-na">N/A</td>
+        <td class="state-col"><span class="state-pill" style="background:#4f7dff22;border-color:#4f7dff66;color:#4f7dff;">CORE</span></td>
+    </tr>
+    
+    <tr>
+        <td class="contract-col" style="color:#65ff8f;" title="SPY 2026-04-17 660C">SPY 2026-04-17 660C</td>
+        <td class="qty-col">1</td>
+        <td class="num-col">3.40</td>
+        <td class="num-col">220.0</td>
+        <td class="num-col pos">120.0</td>
+        <td class="num-col pos">54.5</td>
+        <td class="num-col pos">0.41</td>
+        <td class="num-col theta-na">N/A</td>
+        <td class="state-col"><span class="state-pill" style="background:#65ff8f22;border-color:#65ff8f66;color:#65ff8f;">MOMENTUM</span></td>
+    </tr>
+    
+    <tr>
+        <td class="contract-col" style="color:#b06cff;" title="SPY 2026-04-17 630P">SPY 2026-04-17 630P</td>
+        <td class="qty-col">1</td>
+        <td class="num-col">0.95</td>
+        <td class="num-col">70.0</td>
+        <td class="num-col pos">25.0</td>
+        <td class="num-col pos">35.7</td>
+        <td class="num-col neg">-0.11</td>
+        <td class="num-col theta-na">N/A</td>
+        <td class="state-col"><span class="state-pill" style="background:#b06cff22;border-color:#b06cff66;color:#b06cff;">CONVEX</span></td>
+    </tr>
+    
+    <tr>
+        <td class="contract-col" style="color:#d8a84a;" title="SPY 2026-04-17 640P">SPY 2026-04-17 640P</td>
+        <td class="qty-col">1</td>
+        <td class="num-col">1.65</td>
+        <td class="num-col">220.0</td>
+        <td class="num-col neg">-55.0</td>
+        <td class="num-col neg">-25.0</td>
+        <td class="num-col neg">-0.22</td>
+        <td class="num-col theta-na">N/A</td>
+        <td class="state-col"><span class="state-pill" style="background:#d8a84a22;border-color:#d8a84a66;color:#d8a84a;">HEDGE</span></td>
+    </tr>
+    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="basket-legend-strip">
+            <div class="legend-row"><span class="legend-chip" style="border-color:#4f7dff66;background:#4f7dff22;color:#4f7dff;">CORE</span><span class="legend-chip" style="border-color:#65ff8f66;background:#65ff8f22;color:#65ff8f;">MOMENTUM</span><span class="legend-chip" style="border-color:#b06cff66;background:#b06cff22;color:#b06cff;">CONVEX</span><span class="legend-chip" style="border-color:#d8a84a66;background:#d8a84a22;color:#d8a84a;">HEDGE</span></div>
+            <div class="legend-row note-row">
+                <span class="legend-note">PRIMARY | OK | DTE critical, decision window</span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="basket-card basket-placeholder">
+        <div class="placeholder-inner">
+            <div class="placeholder-title">Pane 2</div>
+            <div class="placeholder-text">Waiting for active basket</div>
+        </div>
+        <div class="basket-legend-strip placeholder-strip">
+            <div class="legend-row">
+                <span class="legend-note">Reserved for role legend, alerts, and short comments.</span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="basket-card basket-placeholder">
+        <div class="placeholder-inner">
+            <div class="placeholder-title">Pane 3</div>
+            <div class="placeholder-text">Waiting for active basket</div>
+        </div>
+        <div class="basket-legend-strip placeholder-strip">
+            <div class="legend-row">
+                <span class="legend-note">Reserved for role legend, alerts, and short comments.</span>
+            </div>
+        </div>
+    </div>
+    
+            
+    <div class="basket-card basket-placeholder">
+        <div class="placeholder-inner">
+            <div class="placeholder-title">Pane 4</div>
+            <div class="placeholder-text">Waiting for active basket</div>
+        </div>
+        <div class="basket-legend-strip placeholder-strip">
+            <div class="legend-row">
+                <span class="legend-note">Reserved for role legend, alerts, and short comments.</span>
+            </div>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+        </div>
+    </body>
+    </html>
+    
