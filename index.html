@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>KFHF Dashboard</title>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="refresh" content="60">
+
+    <script>
+      (function () {
+        const url = new URL(window.location.href);
+        const nowBucket = Math.floor(Date.now() / 30000); // new value every 30 sec
+        const current = url.searchParams.get("r");
+
+        if (current !== String(nowBucket)) {
+          url.searchParams.set("r", String(nowBucket));
+          window.location.replace(url.toString());
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <h1>KFHF Dashboard</h1>
+
+    <ul>
+      <li><a id="basketLink" href="Basket_Board_LATEST.html">Basket Board</a></li>
+      <li><a id="macroLink" href="Macro_Physics_Map_v3_LATEST.html">Macro Physics Map v3</a></li>
+    </ul>
+
+    <script>
+      (function () {
+        const stamp = Math.floor(Date.now() / 30000); // same 30-sec bucket
+        document.getElementById("basketLink").href = "Basket_Board_LATEST.html?r=" + stamp;
+        document.getElementById("macroLink").href = "Macro_Physics_Map_v3_LATEST.html?r=" + stamp;
+      })();
+    </script>
+  </body>
+</html>
